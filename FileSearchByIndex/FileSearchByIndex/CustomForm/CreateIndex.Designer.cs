@@ -1,14 +1,14 @@
-﻿namespace FileSearchByIndex
+﻿namespace FileSearchByIndex.CustomForm
 {
-    partial class MainForm
+    partial class fmCreateIndex
     {
         /// <summary>
-        ///  Required designer variable.
+        /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
         /// <summary>
-        ///  Clean up any resources being used.
+        /// Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
@@ -23,34 +23,35 @@
         #region Windows Form Designer generated code
 
         /// <summary>
-        ///  Required method for Designer support - do not modify
-        ///  the contents of this method with the code editor.
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent()
         {
+            searchSurface = new UserControls.SearchSurface();
             SuspendLayout();
             // 
-            // mnMainMenu
+            // searchSurface
             // 
-            mnMainMenu.Dock = DockStyle.Top;
-            mnMainMenu.Location = new Point(0, 0);
-            mnMainMenu.Name = "mnMainMenu";
-            mnMainMenu.Size = new Size(824, 26);
-            mnMainMenu.TabIndex = 0;
+            searchSurface.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            searchSurface.Location = new Point(12, 12);
+            searchSurface.Name = "searchSurface";
+            searchSurface.Size = new Size(776, 130);
+            searchSurface.TabIndex = 0;
             // 
-            // MainForm
+            // fmCreateIndex
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(824, 524);
-            Controls.Add(mnMainMenu);
-            Name = "MainForm";
-            Text = "Main Form";
+            ClientSize = new Size(800, 420);
+            Controls.Add(searchSurface);
+            Name = "fmCreateIndex";
+            Text = "CreateIndex";
             ResumeLayout(false);
         }
 
         #endregion
 
-        private UserControls.MainMenu mnMainMenu;
+        private UserControls.SearchSurface searchSurface;
     }
 }
