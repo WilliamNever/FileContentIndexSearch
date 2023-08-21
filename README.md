@@ -1,5 +1,6 @@
 # File Content Index Searching
-
-Create indexs for file content
-search context from files easily
-no DB supported
+<ul>
+<li>Create indexs for file content</li>
+<li>search context from files easily</li>
+<li>no DB supported</li>
+</ul>
