@@ -7,7 +7,7 @@ namespace FileSearchByIndex.UserControls
     {
         protected log4net.ILog _log;
         private IForm? mform = null;
-        public void SetIForm(IForm parent) => mform = parent;
+        public void SetParentIForm(IForm parent) => mform = parent;
         public MainMenu()
         {
             _log = log4net.LogManager.GetLogger(GetType());
@@ -34,7 +34,7 @@ namespace FileSearchByIndex.UserControls
                 case "CreateIndexes":
                     using(fmCreateIndex fmCI = new fmCreateIndex())
                     {
-                        fmCI.SetIForm(mform!);
+                        fmCI.SetParentIForm(mform!);
                         fmCI.ShowDialog();
                     }
                     break;

@@ -9,10 +9,10 @@ namespace FileSearchByIndex
         {
             _log = log4net.LogManager.GetLogger(GetType());
             InitializeComponent();
-            mnMainMenu.SetIForm(this);
+            mnMainMenu.SetParentIForm(this);
         }
 
-        public void SetIForm(IForm parent)
+        public void SetParentIForm(IForm parent)
         {
             throw new NotImplementedException();
         }

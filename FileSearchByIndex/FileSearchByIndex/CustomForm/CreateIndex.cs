@@ -10,9 +10,9 @@ namespace FileSearchByIndex.CustomForm
         {
             _log = log4net.LogManager.GetLogger(GetType());
             InitializeComponent();
-            searchSurface.SetIForm(this);
+            searchSurface.SetParentIForm(this);
         }
 
-        public void SetIForm(IForm parent) => mform = parent;
+        public void SetParentIForm(IForm parent) => mform = parent;
     }
 }

@@ -11,7 +11,7 @@ namespace FileSearchByIndex.UserControls
             _log = log4net.LogManager.GetLogger(GetType());
             InitializeComponent();
         }
-        public void SetIForm(IForm parent) => pform = parent;
+        public void SetParentIForm(IForm parent) => pform = parent;
 
         private void btnBrowsPath_Click(object sender, EventArgs e)
         {
