@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FileSearchByIndex.Interfaces
+namespace FileSearchByIndex.Core.Interfaces
 {
     public interface IForm
     {
