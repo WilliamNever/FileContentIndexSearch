@@ -2,9 +2,9 @@
 
 namespace FileSearchByIndex.UserControls
 {
-    public partial class SearchSurface : UserControl
+    public partial class SearchSurface : UserControl, IForm
     {
-        private IForm pform;
+        private IForm? pform = null;
         public SearchSurface()
         {
             InitializeComponent();

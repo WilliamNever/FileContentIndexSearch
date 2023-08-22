@@ -1,14 +1,19 @@
 using FileSearchByIndex.Core.Interfaces;
-using FileSearchByIndex.Models;
 
 namespace FileSearchByIndex
 {
-    public partial class MainForm : BaseForm<MainForm>, IForm
+    public partial class MainForm : Form, IForm
     {
+        protected log4net.ILog _log;
         public MainForm()
         {
-            mnMainMenu = new UserControls.MainMenu(this);
+            _log = log4net.LogManager.GetLogger(GetType());
             InitializeComponent();
+            mnMainMenu.SetIForm(this);
+        }
+
+        public void SetIForm(IForm parent)
+        {
         }
     }
 }

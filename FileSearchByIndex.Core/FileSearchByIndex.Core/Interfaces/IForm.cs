@@ -8,5 +8,6 @@ namespace FileSearchByIndex.Core.Interfaces
 {
     public interface IForm
     {
+        void SetIForm(IForm parent);
     }
 }

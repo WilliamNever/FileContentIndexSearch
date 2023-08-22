@@ -3,12 +3,12 @@ using FileSearchByIndex.CustomForm;
 
 namespace FileSearchByIndex.UserControls
 {
-    public partial class MainMenu : UserControl
+    public partial class MainMenu : UserControl, IForm
     {
-        private IForm mform;
-        public MainMenu(IForm mf)
+        private IForm? mform = null;
+        public void SetIForm(IForm parent) => mform = parent;
+        public MainMenu()
         {
-            mform = mf;
             InitializeComponent();
         }
 
@@ -30,8 +30,9 @@ namespace FileSearchByIndex.UserControls
             switch(e.ClickedItem.AccessibleName)
             {
                 case "CreateIndexes":
-                    using(fmCreateIndex fmCI = new fmCreateIndex(mform))
+                    using(fmCreateIndex fmCI = new fmCreateIndex())
                     {
+                        fmCI.SetIForm(mform!);
                         fmCI.ShowDialog();
                     }
                     break;

@@ -4,12 +4,13 @@ namespace FileSearchByIndex.CustomForm
 {
     public partial class fmCreateIndex : Form, IForm
     {
-        private IForm mform;
-        public fmCreateIndex(IForm fm)
+        private IForm? mform = null;
+        public fmCreateIndex()
         {
-            mform = fm;
             InitializeComponent();
             searchSurface.SetIForm(this);
         }
+
+        public void SetIForm(IForm parent) => mform = parent;
     }
 }

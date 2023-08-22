@@ -28,6 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
+            mnMainMenu = new UserControls.MainMenu();
+
             SuspendLayout();
             // 
             // mnMainMenu
