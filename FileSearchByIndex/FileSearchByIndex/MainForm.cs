@@ -14,6 +14,7 @@ namespace FileSearchByIndex
 
         public void SetIForm(IForm parent)
         {
+            throw new NotImplementedException();
         }
     }
 }

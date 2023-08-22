@@ -4,9 +4,11 @@ namespace FileSearchByIndex.UserControls
 {
     public partial class SearchSurface : UserControl, IForm
     {
+        protected log4net.ILog _log;
         private IForm? pform = null;
         public SearchSurface()
         {
+            _log = log4net.LogManager.GetLogger(GetType());
             InitializeComponent();
         }
         public void SetIForm(IForm parent) => pform = parent;

@@ -5,10 +5,12 @@ namespace FileSearchByIndex.UserControls
 {
     public partial class MainMenu : UserControl, IForm
     {
+        protected log4net.ILog _log;
         private IForm? mform = null;
         public void SetIForm(IForm parent) => mform = parent;
         public MainMenu()
         {
+            _log = log4net.LogManager.GetLogger(GetType());
             InitializeComponent();
         }
 
