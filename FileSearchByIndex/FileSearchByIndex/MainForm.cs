@@ -10,6 +10,11 @@ namespace FileSearchByIndex
             _log = log4net.LogManager.GetLogger(GetType());
             InitializeComponent();
             mnMainMenu.SetParentIForm(this);
+
+            //var exp = new Exception("sxxx");
+            //exp.Data.Add("aaa", "aValue");
+            //exp.Data.Add("bbb", "bValue");
+            //_log.Error("start", exp);
         }
 
         public void SetParentIForm(IForm parent)
