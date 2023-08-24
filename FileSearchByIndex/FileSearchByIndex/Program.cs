@@ -14,7 +14,11 @@ namespace FileSearchByIndex
         static void Main()
         {
             #region register services
-            ServicesRegister.Services.AddTransient<ICreateIndexService, CreateIndexService>();
+            ServicesRegister.Services
+                .AddTransient<ICreateIndexService, CreateIndexService>()
+                .AddTransient<IFileAnalysis, FileAnalysis>()
+                ;
+
             ServicesRegister.Build();
             #endregion
             // To customize application configuration such as set high DPI settings or default font,

@@ -16,10 +16,5 @@ namespace FileSearchByIndex
             //exp.Data.Add("bbb", "bValue");
             //_log.Error("start", exp);
         }
-
-        public void SetParentIForm(IForm parent)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

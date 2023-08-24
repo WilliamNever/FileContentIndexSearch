@@ -29,6 +29,8 @@
         private void InitializeComponent()
         {
             searchSurface = new UserControls.SearchSurface();
+            btnCancel = new Button();
+            txtInfo = new TextBox();
             SuspendLayout();
             // 
             // searchSurface
@@ -39,19 +41,44 @@
             searchSurface.Size = new Size(776, 130);
             searchSurface.TabIndex = 0;
             // 
+            // btnCancel
+            // 
+            btnCancel.Location = new Point(12, 119);
+            btnCancel.Name = "btnCancel";
+            btnCancel.Size = new Size(75, 23);
+            btnCancel.TabIndex = 1;
+            btnCancel.Text = "Cancel";
+            btnCancel.UseVisualStyleBackColor = true;
+            btnCancel.Click += btnCancel_Click;
+            // 
+            // txtInfo
+            // 
+            txtInfo.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            txtInfo.Location = new Point(12, 148);
+            txtInfo.Multiline = true;
+            txtInfo.Name = "txtInfo";
+            txtInfo.ScrollBars = ScrollBars.Vertical;
+            txtInfo.Size = new Size(776, 300);
+            txtInfo.TabIndex = 2;
+            // 
             // fmCreateIndex
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 420);
+            ClientSize = new Size(800, 460);
+            Controls.Add(txtInfo);
+            Controls.Add(btnCancel);
             Controls.Add(searchSurface);
             Name = "fmCreateIndex";
             Text = "CreateIndex";
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
 
         private UserControls.SearchSurface searchSurface;
+        private Button btnCancel;
+        private TextBox txtInfo;
     }
 }

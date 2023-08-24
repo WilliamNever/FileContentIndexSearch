@@ -14,5 +14,18 @@ namespace FileSearchByIndex.CustomForm
         }
 
         public void SetParentIForm(IForm parent) => mform = parent;
+
+        public virtual void CleanMessages()
+        {
+            txtInfo.Text = string.Empty;
+        }
+        public virtual void AcceptMessage(string message)
+        {
+            txtInfo.Text += $"{message ?? string.Empty}{Environment.NewLine}";
+        }
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            searchSurface.CancelWorking();
+        }
     }
 }

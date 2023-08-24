@@ -9,6 +9,6 @@ namespace FileSearchByIndex.Core.Interfaces
 {
     public interface ICreateIndexService
     {
-        Task<string> CreateIndexFileAsync(SearchModel search, Action<string>? updateHandler = null);
+        Task<string> CreateIndexFileAsync(SearchModel search, Action<string>? updateHandler = null, CancellationToken token = default);
     }
 }

@@ -1,8 +1,10 @@
 ﻿using FileSearchByIndex.Core;
+using FileSearchByIndex.Core.Consts;
 using FileSearchByIndex.Core.Helper;
 using FileSearchByIndex.Core.Interfaces;
 using FileSearchByIndex.Core.Models;
 using FileSearchByIndex.Infrastructure.Services;
+using System;
 
 namespace FileSearchByIndex.UserControls
 {
@@ -10,6 +12,7 @@ namespace FileSearchByIndex.UserControls
     {
         protected log4net.ILog _log;
         private IForm? pform = null;
+        protected CancellationTokenSource _cts;
         public SearchSurface()
         {
             _log = log4net.LogManager.GetLogger(GetType());
@@ -34,37 +37,44 @@ namespace FileSearchByIndex.UserControls
                 Filter = txtFilter.Text,
                 IsIncludeSub = cbkIncludeSub.Checked,
                 SearchPath = txtPath.Text,
-                IndexFileName = txtIndexFileName.Text,
+                IndexFileName = Path.Combine(EnviConst.IndexesFolderPath, txtIndexFileName.Text),
                 IndexDescription = txtDescription.Text
             };
-            
+
+            pform?.CleanMessages();
             _ = RunAsync(search);
         }
         private async Task RunAsync(SearchModel search)
         {
-            ICreateIndexService icrs = ServicesRegister.GetService<ICreateIndexService>();
             Enabled = false;
+            ICreateIndexService icrs = ServicesRegister.GetService<ICreateIndexService>();
+            Action<string> action = str => {
+                    Invoke(AcceptMessage, str);
+                };
             try
             {
-                Action<string> action = str => {
-                    Invoke(ReFreshx, str);
-                };
-                var path = await Task.Run(async () => await icrs.CreateIndexFileAsync(search, action));
+                 _cts = new CancellationTokenSource();
+                var IndexFileFullName = await Task.Run(async () => await icrs.CreateIndexFileAsync(search, action, _cts.Token), _cts.Token);
+                action.Invoke($"{Environment.NewLine}{Environment.NewLine} Task finished -");
+                action.Invoke($"Index file was created - {IndexFileFullName} -");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error - {ex.Message}");
                 ex.Data.Add("Search", ConversionsHelper.SerializeToJson(search));
                 _log.Error("Error in creating index file", ex);
+                action.Invoke(ex.Message);
             }
             finally
             {
                 Enabled = true;
             }
         }
-        public void ReFreshx(string mess)
+        public void AcceptMessage(string mess)
         {
-            txtDescription.Text += mess;
+            pform?.AcceptMessage(mess);
+        }
+        public virtual void CancelWorking(string workName = "NoName") {
+            _cts.Cancel();
         }
     }
 }

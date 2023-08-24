@@ -8,6 +8,9 @@ namespace FileSearchByIndex.Core.Interfaces
 {
     public interface IForm
     {
-        void SetParentIForm(IForm parent);
+        void SetParentIForm(IForm parent) { throw new NotImplementedException(); }
+        void CleanMessages() { throw new NotImplementedException(); }
+        void AcceptMessage(string message) { throw new NotImplementedException(); }
+        void CancelWorking(string workName = "NoName") { throw new NotImplementedException(); }
     }
 }
