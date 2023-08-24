@@ -38,7 +38,7 @@
             label3 = new Label();
             txtDescription = new TextBox();
             label4 = new Label();
-            btnIndexName = new TextBox();
+            txtIndexFileName = new TextBox();
             SuspendLayout();
             // 
             // label1
@@ -136,18 +136,18 @@
             label4.TabIndex = 9;
             label4.Text = "Index Name:";
             // 
-            // btnIndexName
+            // txtIndexFileName
             // 
-            btnIndexName.Location = new Point(81, 39);
-            btnIndexName.Name = "btnIndexName";
-            btnIndexName.Size = new Size(152, 23);
-            btnIndexName.TabIndex = 10;
+            txtIndexFileName.Location = new Point(81, 39);
+            txtIndexFileName.Name = "txtIndexFileName";
+            txtIndexFileName.Size = new Size(152, 23);
+            txtIndexFileName.TabIndex = 10;
             // 
             // SearchSurface
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            Controls.Add(btnIndexName);
+            Controls.Add(txtIndexFileName);
             Controls.Add(label4);
             Controls.Add(txtDescription);
             Controls.Add(label3);
@@ -176,6 +176,6 @@
         private Label label3;
         private TextBox txtDescription;
         private Label label4;
-        private TextBox btnIndexName;
+        private TextBox txtIndexFileName;
     }
 }

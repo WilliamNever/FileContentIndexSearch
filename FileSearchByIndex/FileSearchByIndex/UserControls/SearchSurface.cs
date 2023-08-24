@@ -1,4 +1,8 @@
-﻿using FileSearchByIndex.Core.Interfaces;
+﻿using FileSearchByIndex.Core;
+using FileSearchByIndex.Core.Helper;
+using FileSearchByIndex.Core.Interfaces;
+using FileSearchByIndex.Core.Models;
+using FileSearchByIndex.Infrastructure.Services;
 
 namespace FileSearchByIndex.UserControls
 {
@@ -23,9 +27,44 @@ namespace FileSearchByIndex.UserControls
                 txtPath.Text = fbd.SelectedPath;
             }
         }
-
         private void btnCreateIndex_Click(object sender, EventArgs e)
         {
+            SearchModel search = new()
+            {
+                Filter = txtFilter.Text,
+                IsIncludeSub = cbkIncludeSub.Checked,
+                SearchPath = txtPath.Text,
+                IndexFileName = txtIndexFileName.Text,
+                IndexDescription = txtDescription.Text
+            };
+            
+            _ = RunAsync(search);
+        }
+        private async Task RunAsync(SearchModel search)
+        {
+            ICreateIndexService icrs = ServicesRegister.GetService<ICreateIndexService>();
+            Enabled = false;
+            try
+            {
+                Action<string> action = str => {
+                    Invoke(ReFreshx, str);
+                };
+                var path = await Task.Run(async () => await icrs.CreateIndexFileAsync(search, action));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error - {ex.Message}");
+                ex.Data.Add("Search", ConversionsHelper.SerializeToJson(search));
+                _log.Error("Error in creating index file", ex);
+            }
+            finally
+            {
+                Enabled = true;
+            }
+        }
+        public void ReFreshx(string mess)
+        {
+            txtDescription.Text += mess;
         }
     }
 }

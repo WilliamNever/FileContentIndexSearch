@@ -1,3 +1,8 @@
+using FileSearchByIndex.Core;
+using FileSearchByIndex.Core.Interfaces;
+using FileSearchByIndex.Infrastructure.Services;
+using Microsoft.Extensions.DependencyInjection;
+
 namespace FileSearchByIndex
 {
     internal static class Program
@@ -8,6 +13,10 @@ namespace FileSearchByIndex
         [STAThread]
         static void Main()
         {
+            #region register services
+            ServicesRegister.Services.AddTransient<ICreateIndexService, CreateIndexService>();
+            ServicesRegister.Build();
+            #endregion
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
