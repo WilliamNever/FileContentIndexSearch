@@ -23,6 +23,13 @@ namespace FileSearchByIndex.Core.Helper
                 { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }
                 );
         }
+        public static string SerializeToFormattedJson(object obj)
+        {
+            return SerializeToJson(obj,
+                new JsonSerializerOptions
+                { WriteIndented = true }
+                );
+        }
         public static string SerializeToJson(object obj, JsonSerializerOptions? jsOption = null)
         {
             if (jsOption == null)
@@ -66,6 +73,12 @@ namespace FileSearchByIndex.Core.Helper
                     dic.Add(key, value);
             return dic;
         }
+        /// <summary>
+        /// copy value from objA to objB
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="objA"></param>
+        /// <param name="objB"></param>
         public static void ReflectCopy<T>(T objA, ref T objB)
         {
             if (objA == null || objB == null) return;

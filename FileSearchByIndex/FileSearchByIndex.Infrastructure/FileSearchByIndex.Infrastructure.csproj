@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FileSearchByIndex.Infrastructure.CHTextAnalysis\FileSearchByIndex.Infrastructure.CHTextAnalysis.csproj" />
+    <ProjectReference Include="..\FileSearchByIndex.Infrastructure.CSAnalysis\FileSearchByIndex.Infrastructure.CSAnalysis.csproj" />
+    <ProjectReference Include="..\FileSearchByIndex.Infrastructure.ENTextAnalysis\FileSearchByIndex.Infrastructure.ENTextAnalysis.csproj" />
+    <ProjectReference Include="..\FileSearchByIndex.Infrastructure.JSAnalysis\FileSearchByIndex.Infrastructure.JSAnalysis.csproj" />
+  </ItemGroup>
+
+</Project>

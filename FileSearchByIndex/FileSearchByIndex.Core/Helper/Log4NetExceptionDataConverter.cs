@@ -12,13 +12,17 @@ namespace FileSearchByIndex.Core.Helper
     {
         protected override void Convert(TextWriter writer, LoggingEvent loggingEvent)
         {
-            var data = loggingEvent.ExceptionObject.Data;
+            var data = loggingEvent.ExceptionObject?.Data;
             if (data != null)
             {
                 foreach (var key in data.Keys)
                 {
                     writer.Write("Data[{0}]={1}" + Environment.NewLine, key, data[key]);
                 }
+            }
+            else
+            {
+                writer.Write(loggingEvent.MessageObject?.ToString());
             }
         }
     }

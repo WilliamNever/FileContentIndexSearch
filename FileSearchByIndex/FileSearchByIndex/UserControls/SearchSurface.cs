@@ -42,25 +42,28 @@ namespace FileSearchByIndex.UserControls
             };
 
             pform?.CleanMessages();
+            AcceptMessage($"Beginning Searching - {Environment.NewLine}");
+            AcceptMessage($"{ConversionsHelper.SerializeToFormattedJson(search)}{Environment.NewLine}{Environment.NewLine}");
             _ = RunAsync(search);
         }
         private async Task RunAsync(SearchModel search)
         {
             Enabled = false;
             ICreateIndexService icrs = ServicesRegister.GetService<ICreateIndexService>();
-            Action<string> action = str => {
-                    Invoke(AcceptMessage, str);
-                };
+            Action<string> action = str =>
+            {
+                Invoke(AcceptMessage, str);
+            };
             try
             {
-                 _cts = new CancellationTokenSource();
+                _cts = new CancellationTokenSource();
                 var IndexFileFullName = await Task.Run(async () => await icrs.CreateIndexFileAsync(search, action, _cts.Token), _cts.Token);
                 action.Invoke($"{Environment.NewLine}{Environment.NewLine} Task finished -");
                 action.Invoke($"Index file was created - {IndexFileFullName} -");
             }
             catch (Exception ex)
             {
-                ex.Data.Add("Search", ConversionsHelper.SerializeToJson(search));
+                ex.Data.Add("Search", ConversionsHelper.SerializeToFormattedJson(search));
                 _log.Error("Error in creating index file", ex);
                 action.Invoke(ex.Message);
             }
@@ -73,8 +76,9 @@ namespace FileSearchByIndex.UserControls
         {
             pform?.AcceptMessage(mess);
         }
-        public virtual void CancelWorking(string workName = "NoName") {
-            _cts.Cancel();
+        public virtual void CancelWorking(string workName = "NoName")
+        {
+            _cts?.Cancel();
         }
     }
 }

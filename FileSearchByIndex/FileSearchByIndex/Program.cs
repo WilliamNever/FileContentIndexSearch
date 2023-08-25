@@ -14,6 +14,7 @@ namespace FileSearchByIndex
         static void Main()
         {
             #region register services
+            ServicesRegister.Init();
             ServicesRegister.Services
                 .AddTransient<ICreateIndexService, CreateIndexService>()
                 .AddTransient<IFileAnalysis, FileAnalysis>()

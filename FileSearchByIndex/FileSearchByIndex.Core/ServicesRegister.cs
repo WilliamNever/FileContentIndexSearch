@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using FileSearchByIndex.Core.Consts;
+using FileSearchByIndex.Core.Settings;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +23,14 @@ namespace FileSearchByIndex.Core
         public static T GetService<T>()
         {
             return Provider.GetService<T>() ?? throw new MissingMemberException($"Service {typeof(T).Name} does not exist.");
+        }
+
+        public static void Init()
+        {
+            IConfigurationBuilder builder = new ConfigurationBuilder().AddJsonFile($"{EnviConst.AppFolder}\\appsettings.json", false, true);
+            IConfigurationRoot root = builder.Build();
+            //var tts = root.GetSection(nameof(TaskThreadSettings)).Get<TaskThreadSettings>();
+            Services.Configure<TaskThreadSettings>(root.GetSection(nameof(TaskThreadSettings)));
         }
     }
 }

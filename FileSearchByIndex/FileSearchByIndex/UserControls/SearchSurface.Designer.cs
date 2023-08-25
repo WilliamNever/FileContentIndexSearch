@@ -39,6 +39,7 @@
             txtDescription = new TextBox();
             label4 = new Label();
             txtIndexFileName = new TextBox();
+            label5 = new Label();
             SuspendLayout();
             // 
             // label1
@@ -55,7 +56,7 @@
             txtFilter.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             txtFilter.Location = new Point(81, 11);
             txtFilter.Name = "txtFilter";
-            txtFilter.Size = new Size(152, 23);
+            txtFilter.Size = new Size(294, 23);
             txtFilter.TabIndex = 1;
             // 
             // label2
@@ -73,7 +74,7 @@
             cbkIncludeSub.AutoSize = true;
             cbkIncludeSub.Checked = true;
             cbkIncludeSub.CheckState = CheckState.Checked;
-            cbkIncludeSub.Location = new Point(239, 13);
+            cbkIncludeSub.Location = new Point(490, 13);
             cbkIncludeSub.Name = "cbkIncludeSub";
             cbkIncludeSub.Size = new Size(128, 19);
             cbkIncludeSub.TabIndex = 3;
@@ -85,13 +86,13 @@
             txtPath.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             txtPath.Location = new Point(81, 67);
             txtPath.Name = "txtPath";
-            txtPath.Size = new Size(362, 23);
+            txtPath.Size = new Size(456, 23);
             txtPath.TabIndex = 4;
             // 
             // btnBrowsPath
             // 
             btnBrowsPath.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnBrowsPath.Location = new Point(256, 100);
+            btnBrowsPath.Location = new Point(543, 67);
             btnBrowsPath.Name = "btnBrowsPath";
             btnBrowsPath.Size = new Size(75, 23);
             btnBrowsPath.TabIndex = 5;
@@ -102,7 +103,7 @@
             // btnCreateIndex
             // 
             btnCreateIndex.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnCreateIndex.Location = new Point(350, 100);
+            btnCreateIndex.Location = new Point(525, 100);
             btnCreateIndex.Name = "btnCreateIndex";
             btnCreateIndex.Size = new Size(93, 23);
             btnCreateIndex.TabIndex = 6;
@@ -124,7 +125,7 @@
             txtDescription.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             txtDescription.Location = new Point(315, 39);
             txtDescription.Name = "txtDescription";
-            txtDescription.Size = new Size(128, 23);
+            txtDescription.Size = new Size(303, 23);
             txtDescription.TabIndex = 8;
             // 
             // label4
@@ -143,10 +144,21 @@
             txtIndexFileName.Size = new Size(152, 23);
             txtIndexFileName.TabIndex = 10;
             // 
+            // label5
+            // 
+            label5.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            label5.AutoSize = true;
+            label5.Location = new Point(381, 15);
+            label5.Name = "label5";
+            label5.Size = new Size(87, 15);
+            label5.TabIndex = 11;
+            label5.Text = "Separated by '|'";
+            // 
             // SearchSurface
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            Controls.Add(label5);
             Controls.Add(txtIndexFileName);
             Controls.Add(label4);
             Controls.Add(txtDescription);
@@ -159,7 +171,7 @@
             Controls.Add(txtFilter);
             Controls.Add(label1);
             Name = "SearchSurface";
-            Size = new Size(446, 126);
+            Size = new Size(621, 126);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -177,5 +189,6 @@
         private TextBox txtDescription;
         private Label label4;
         private TextBox txtIndexFileName;
+        private Label label5;
     }
 }
