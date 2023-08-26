@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FileSearchByIndex.Core.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,8 @@ namespace FileSearchByIndex.Core.Interfaces
 {
     public interface IAnalysisService
     {
-        public string FileType { get; }
+        public string FileExtension { get; }
+
+        Task<IEnumerable<KeyWordsModel>> AnalysisFileKeyWorks(string file, Action<string>? updateHandler, CancellationToken token = default);
     }
 }

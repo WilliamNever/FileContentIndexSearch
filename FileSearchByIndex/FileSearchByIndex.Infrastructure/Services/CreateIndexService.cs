@@ -1,5 +1,6 @@
 ﻿using FileSearchByIndex.Core.Interfaces;
 using FileSearchByIndex.Core.Models;
+using FileSearchByIndex.Core.Services;
 using FileSearchByIndex.Core.Settings;
 using Microsoft.Extensions.Options;
 
@@ -16,10 +17,15 @@ namespace FileSearchByIndex.Infrastructure.Services
         }
         public async Task<string> CreateIndexFileAsync(SearchModel search, Action<string>? updateHandler = null, CancellationToken token = default)
         {
+            IndexFilesModel indexForPath = new IndexFilesModel() {
+                Description = search.IndexDescription,
+                IndexOfFolder = search.SearchPath
+            };
             var files = SearchDirectories(new string[] { search.SearchPath }, search, updateHandler, token);
+            if (files.Any()) indexForPath.IndexFiles.AddRange(await _fileAnaly.CreateFileIndexListAsync(files, updateHandler, token));
 
-            updateHandler?.Invoke($"{search.IndexFileName} is created - ");
-            return search.IndexFileName;
+            updateHandler?.Invoke($"{search.IndexFileFullName} is created - ");
+            return search.IndexFileFullName;
         }
 
         private List<string> SearchDirectories(string[] searchDir, SearchModel searcher, Action<string>? updateHandler = null, CancellationToken token = default)

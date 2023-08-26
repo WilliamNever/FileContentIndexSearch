@@ -12,6 +12,6 @@ namespace FileSearchByIndex.Core.Models
         public EnKeyWordsType KeyWordsType { get; set; } = EnKeyWordsType.None;
         public string KeyWord { get; set; }
         public int Frequency { get; set; }
-        public string SampleTxt { get; set; }
+        public List<SampleTxtModel> SampleTxts { get; set; } = new List<SampleTxtModel>();
     }
 }

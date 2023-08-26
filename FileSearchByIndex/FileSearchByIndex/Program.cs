@@ -1,5 +1,6 @@
 using FileSearchByIndex.Core;
 using FileSearchByIndex.Core.Interfaces;
+using FileSearchByIndex.Infrastructure.CSAnalysis.Services;
 using FileSearchByIndex.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,6 +19,18 @@ namespace FileSearchByIndex
             ServicesRegister.Services
                 .AddTransient<ICreateIndexService, CreateIndexService>()
                 .AddTransient<IFileAnalysis, FileAnalysis>()
+                .AddTransient<IAnalysisService, CSAnalysisService>()
+                ;
+
+            ServicesRegister.Services
+                .AddTransient<Func<string, IAnalysisService?>>(_ =>
+                    exsions =>
+                    {
+                        var analysises = _.GetServices<IAnalysisService>();
+                        var analisis = analysises?.FirstOrDefault(x => x.FileExtension.Equals(exsions, StringComparison.OrdinalIgnoreCase));
+                        return analisis;
+                    }
+                )
                 ;
 
             ServicesRegister.Build();

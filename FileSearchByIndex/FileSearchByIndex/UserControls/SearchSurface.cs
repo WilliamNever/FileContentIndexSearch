@@ -3,8 +3,6 @@ using FileSearchByIndex.Core.Consts;
 using FileSearchByIndex.Core.Helper;
 using FileSearchByIndex.Core.Interfaces;
 using FileSearchByIndex.Core.Models;
-using FileSearchByIndex.Infrastructure.Services;
-using System;
 
 namespace FileSearchByIndex.UserControls
 {
@@ -37,10 +35,16 @@ namespace FileSearchByIndex.UserControls
                 Filter = txtFilter.Text,
                 IsIncludeSub = cbkIncludeSub.Checked,
                 SearchPath = txtPath.Text,
-                IndexFileName = Path.Combine(EnviConst.IndexesFolderPath, txtIndexFileName.Text),
+                IndexFileName = txtIndexFileName.Text,
+                IndexFileFullName = Path.Combine(EnviConst.IndexesFolderPath, txtIndexFileName.Text),
                 IndexDescription = txtDescription.Text
             };
-
+            var rsl = search.SimpleValidateProperties();
+            if (rsl.Count > 0)
+            {
+                MessageBox.Show(this, " - " + string.Join($"{EnviConst.NewLine} - ", rsl.Select(x => x.ErrorMessage)), "Validate Result -");
+                return;
+            }
             pform?.CleanMessages();
             AcceptMessage($"Beginning Searching - {Environment.NewLine}");
             AcceptMessage($"{ConversionsHelper.SerializeToFormattedJson(search)}{Environment.NewLine}{Environment.NewLine}");
