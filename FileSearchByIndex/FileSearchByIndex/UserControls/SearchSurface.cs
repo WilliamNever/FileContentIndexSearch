@@ -15,6 +15,9 @@ namespace FileSearchByIndex.UserControls
         {
             _log = log4net.LogManager.GetLogger(GetType());
             InitializeComponent();
+
+            txtPath.Text = @"D:\tAnsly";
+            txtIndexFileName.Text = "aat";
         }
         public void SetParentIForm(IForm parent) => pform = parent;
 
@@ -36,7 +39,7 @@ namespace FileSearchByIndex.UserControls
                 IsIncludeSub = cbkIncludeSub.Checked,
                 SearchPath = txtPath.Text,
                 IndexFileName = txtIndexFileName.Text,
-                IndexFileFullName = Path.Combine(EnviConst.IndexesFolderPath, txtIndexFileName.Text),
+                IndexFileFullName = Path.Combine(EnviConst.IndexesFolderPath, txtIndexFileName.Text, ".json"),
                 IndexDescription = txtDescription.Text
             };
             var rsl = search.SimpleValidateProperties();

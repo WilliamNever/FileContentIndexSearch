@@ -1,4 +1,5 @@
 ﻿using FileSearchByIndex.Core.Consts;
+using FileSearchByIndex.Core.Models;
 using FileSearchByIndex.Core.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,8 +30,9 @@ namespace FileSearchByIndex.Core
         {
             IConfigurationBuilder builder = new ConfigurationBuilder().AddJsonFile($"{EnviConst.AppFolder}\\appsettings.json", false, true);
             IConfigurationRoot root = builder.Build();
-            //var tts = root.GetSection(nameof(TaskThreadSettings)).Get<TaskThreadSettings>();
+            //var tts = root.GetSection("InboundFileConfigs").Get<List<InboundFileConfig>>();
             Services.Configure<TaskThreadSettings>(root.GetSection(nameof(TaskThreadSettings)));
+            Services.Configure<List<InboundFileConfig>>(root.GetSection("InboundFileConfigs"));
         }
     }
 }
