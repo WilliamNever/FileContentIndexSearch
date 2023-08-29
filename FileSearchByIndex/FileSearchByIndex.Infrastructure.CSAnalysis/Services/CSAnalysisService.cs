@@ -1,5 +1,4 @@
-﻿using FileSearchByIndex.Core.Consts;
-using FileSearchByIndex.Core.Interfaces;
+﻿using FileSearchByIndex.Core.Interfaces;
 using FileSearchByIndex.Core.Models;
 using FileSearchByIndex.Core.Services;
 using Microsoft.Extensions.Options;
@@ -18,8 +17,8 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
 
         public Guid Id { get; set; } = Guid.NewGuid();
         public string FileExtension { get => ".cs"; }
-        protected virtual Regex PickerOfCommentKeyWords1 { get => new($"({EnviConst.NewLine})+[\\s]*/// <summary>[\\w\\W]+?/// </summary>"); }
-        protected virtual Regex PickerOfCommentKeyWords2 { get => new($"({EnviConst.NewLine})+[\\s]*/\\*[\\w\\W]+?\\*/"); }
+        protected virtual Regex PickerOfCommentKeyWords1 { get => new($"((^[\\s]*)|([\\s]+))/// <summary>[\\w\\W]+?/// </summary>"); }
+        protected virtual Regex PickerOfCommentKeyWords2 { get => new($"((^[\\s]*)|([\\s]+))/\\*[\\w\\W]+?\\*/"); }
 
         public async Task<IEnumerable<KeyWordsModel>> AnalysisFileKeyWorks(string file, Action<string>? updateHandler, CancellationToken token = default)
         {
@@ -94,8 +93,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
              */
             List<KeyWordsModel> keyWords = new List<KeyWordsModel>();
             var matches1 = PickerOfCommentKeyWords1.Matches(txt).AsEnumerable().ToList();
-            var matches2 = PickerOfCommentKeyWords2.Matches(txt).AsEnumerable();
-            matches1.AddRange(matches2);
+            matches1.AddRange(PickerOfCommentKeyWords2.Matches(txt));
             try
             {
                 foreach (var m in matches1)
@@ -105,7 +103,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                         KeyWord = EmptyChars.Replace(LineWrap.Replace(m.Value, ""), " ").Trim(),
                         KeyWordsType = Core.Enums.EnKeyWordsType.Comment,
                     };
-                    var lineNum = txt[0..txt.IndexOf(m.Value)].Split(EnviConst.NewLine).Length;
+                    var lineNum = LineWrap.Matches(txt[0..txt.IndexOf(m.Value.Trim())]).Count;
                     kv.SampleTxts.Add(new SampleTxtModel { LineNumber = (lineNum + 1), Text = m.Value.Trim() });
                     keyWords.Add(kv);
                 }
