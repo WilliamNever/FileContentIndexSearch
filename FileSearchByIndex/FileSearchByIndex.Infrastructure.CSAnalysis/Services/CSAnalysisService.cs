@@ -19,6 +19,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
         public string FileExtension { get => ".cs"; }
         protected virtual Regex PickerOfCommentKeyWords1 { get => new($"((^[\\s]*)|([\\s]+))/// <summary>[\\w\\W]+?/// </summary>"); }
         protected virtual Regex PickerOfCommentKeyWords2 { get => new($"((^[\\s]*)|([\\s]+))/\\*[\\w\\W]+?\\*/"); }
+        protected virtual Regex PickerClassName { get => new($"([\\w\\s]*(class){{1}})[\\w ]+[\\w\\W]*?({{){{1}}"); }
 
         public async Task<IEnumerable<KeyWordsModel>> AnalysisFileKeyWorks(string file, Action<string>? updateHandler, CancellationToken token = default)
         {
@@ -71,6 +72,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
              * Pick up the class, method names
              */
             List<KeyWordsModel> keyWords = new List<KeyWordsModel>();
+            var matches = PickerClassName.Matches(txt).ToList();
             throw new NotImplementedException();
         }
         /// <summary>
@@ -92,7 +94,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                     /*  *_/
              */
             List<KeyWordsModel> keyWords = new List<KeyWordsModel>();
-            var matches1 = PickerOfCommentKeyWords1.Matches(txt).AsEnumerable().ToList();
+            var matches1 = PickerOfCommentKeyWords1.Matches(txt).ToList();
             matches1.AddRange(PickerOfCommentKeyWords2.Matches(txt));
             try
             {
@@ -103,8 +105,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                         KeyWord = EmptyChars.Replace(LineWrap.Replace(m.Value, ""), " ").Trim(),
                         KeyWordsType = Core.Enums.EnKeyWordsType.Comment,
                     };
-                    var lineNum = LineWrap.Matches(txt[0..txt.IndexOf(m.Value.Trim())]).Count;
-                    kv.SampleTxts.Add(new SampleTxtModel { LineNumber = (lineNum + 1), Text = m.Value.Trim() });
+                    kv.SampleTxts.Add(new SampleTxtModel { LineNumber = GetCurrentLineNumber(m.Value.Trim()) + 1, Text = m.Value.Trim() });
                     keyWords.Add(kv);
                 }
             }
@@ -114,6 +115,11 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
             }
 
             return keyWords;
+        }
+
+        private int GetCurrentLineNumber(string txt)
+        {
+            return LineWrap.Matches(txt[0..txt.IndexOf(txt?.Trim() ?? "")]).Count;
         }
 
         private async Task<string> ReadFileAsync(string path)
