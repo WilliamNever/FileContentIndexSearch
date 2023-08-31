@@ -31,9 +31,10 @@ Console.WriteLine("Hello, World!");
     //var regx = new Regex($"[\\w\\s]*(class){{1}}[\\w\\W]*?({{){{1}}");
     //var ms = regx.Matches(ss);
 
-    string ss = "(var m in matches1)";
-    var regx = new Regex($"[\\s]");
+    string ss = "_log.Error($\"Error(s)\"hhh";
+    Regex regx = new Regex($"\\\"[\\w\\W]*?");
     var ms = regx.Matches(ss);
+    var ot = regx.Replace(ss, "-");
 
 
     var ii = 0 ;

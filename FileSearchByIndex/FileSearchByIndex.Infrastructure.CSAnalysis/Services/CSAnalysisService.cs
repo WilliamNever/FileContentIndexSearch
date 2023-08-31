@@ -2,7 +2,9 @@
 using FileSearchByIndex.Core.Interfaces;
 using FileSearchByIndex.Core.Models;
 using FileSearchByIndex.Core.Services;
+using FileSearchByIndex.Core.Settings;
 using Microsoft.Extensions.Options;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
@@ -10,14 +12,19 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
     public class CSAnalysisService : BaseAnalysis<CSAnalysisService>, IAnalysisService
     {
         protected InboundFileConfig? Config;
-        public CSAnalysisService(IOptions<List<InboundFileConfig>> configs)
+        protected TaskThreadSettings _taskSettings;
+        public CSAnalysisService(IOptions<TaskThreadSettings> TaskSettings, IOptions<List<InboundFileConfig>> configs)
         {
+            _taskSettings = TaskSettings.Value;
             Config = configs?.Value.FirstOrDefault(x => x?.FileExtension?.Equals(FileExtension, StringComparison.OrdinalIgnoreCase) ?? false);
             if (Config != null) InitCharEncoding(Config.EncodingName);
         }
 
         public Guid Id { get; set; } = Guid.NewGuid();
         public string FileExtension { get => ".cs"; }
+        protected Regex regString = new Regex($"\\\"[\\w\\W]*?\\\"");
+        protected Regex regDCom = new Regex($"\\\"");
+
         protected virtual Regex PickerOfCommentKeyWords1 { get => new($"((^[\\s]*)|([\\s]+))/// <summary>[\\w\\W]+?/// </summary>"); }
         protected virtual Regex PickerOfCommentKeyWords2 { get => new($"((^[\\s]*)|([\\s]+))/\\*[\\w\\W]+?\\*/"); }
         protected virtual Regex PickerClassName { get => new($"([\\w\\s]*(class|interface|enum|struct){{1}})[ ]+[\\w]+[\\w\\W]*?({EnviConst.NewLine})"); }
@@ -59,11 +66,62 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
             /*
              * pick up the commands in use
              */
+            Regex regCommandName = new Regex($"[\\w.<>]+[\\s]*\\(");
             List<KeyWordsModel> keyWords = new List<KeyWordsModel>();
             var matches = PickerCommandInUsing.Matches(txt).ToList();
             try
             {
-                var keysTxtList = matches.Select(x => x.Value.Trim()).ToList();
+                var keysTxtList = matches.Select(x => new SampleTxtModel { LineNumber = GetCurrentLineNumber(txt, x.Value.Trim()) + 1, Text = x.Value.Trim() }).ToList();
+                var mCmds = keysTxtList.SelectMany(kt => regCommandName.Matches(ClearString(kt.Text.Trim(), "\"")).Select(x => x.Value.Trim().TrimEnd('('))).Distinct().ToList();
+                //foreach (var mc in mCmds)
+                //{
+                //    var list = keysTxtList.Where(x => x.Text.Contains(mc));
+                //    if (list.Any())
+                //    {
+                //        keyWords.Add(new KeyWordsModel
+                //        {
+                //            KeyWord = mc,
+                //            KeyWordsType = Core.Enums.EnKeyWordsType.CommandName,
+                //            SampleTxts = list.ToList()
+                //        });
+                //    }
+                //}
+                if (mCmds.Any())
+                    await Parallel.ForEachAsync(mCmds, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount },
+                        async (item, token) =>
+                            await Task.Run(async () =>
+                            {
+                                try
+                                {
+                                    if (token.IsCancellationRequested)
+                                    {
+                                        throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+                                    }
+                                    var list = keysTxtList.Where(x => x.Text.Contains(item));
+                                    if (list.Any())
+                                    {
+                                        lock (keyWords)
+                                        {
+                                            keyWords.Add(new KeyWordsModel
+                                            {
+                                                KeyWord = item,
+                                                KeyWordsType = Core.Enums.EnKeyWordsType.CommandName,
+                                                SampleTxts = list.ToList()
+                                            });
+                                        }
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    _log.Error($"{item} broke - {EnviConst.NewLine}", ex);
+                                    updateHandler?.Invoke($"{item} broke - {ex.Message} - {EnviConst.NewLine}");
+                                }
+                                finally
+                                {
+                                }
+                            }
+                        , token));
+
             }
             catch (Exception ex)
             {
@@ -71,6 +129,15 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
             }
 
             return keyWords;
+        }
+        private string ClearString(string txt, string padString)
+        {
+            if ((regDCom.Matches(txt).Count & 1) > 0)
+            {
+                txt += padString;
+            }
+            var str = regString.Replace(txt, "");
+            return str;
         }
         /// <summary>
         /// Pick up keyworkds in class, method names
@@ -92,8 +159,8 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
             try
             {
                 foreach (var m in matches)
-                    keyWords.Add(CreateKeyword(m, Core.Enums.EnKeyWordsType.MethodOrClassName));
-                
+                    keyWords.Add(CreateKeyword(txt, m, Core.Enums.EnKeyWordsType.MethodOrClassName));
+
             }
             catch (Exception ex)
             {
@@ -127,7 +194,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
             try
             {
                 foreach (var m in matches)
-                    keyWords.Add(CreateKeyword(m, Core.Enums.EnKeyWordsType.Comment));
+                    keyWords.Add(CreateKeyword(txt, m, Core.Enums.EnKeyWordsType.Comment));
             }
             catch (Exception ex)
             {
@@ -137,19 +204,19 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
             return keyWords;
         }
 
-        private KeyWordsModel CreateKeyword(Match m, Core.Enums.EnKeyWordsType kvType)
+        private KeyWordsModel CreateKeyword(string txt, Match m, Core.Enums.EnKeyWordsType kvType)
         {
             var kv = new KeyWordsModel
             {
                 KeyWord = EmptyChars.Replace(LineWrap.Replace(m.Value, ""), " ").Trim(),
                 KeyWordsType = kvType,
             };
-            kv.SampleTxts.Add(new SampleTxtModel { LineNumber = GetCurrentLineNumber(m.Value.Trim()) + 1, Text = m.Value.Trim() });
+            kv.SampleTxts.Add(new SampleTxtModel { LineNumber = GetCurrentLineNumber(txt, m.Value.Trim()) + 1, Text = m.Value.Trim() });
             return kv;
         }
-        private int GetCurrentLineNumber(string txt)
+        private int GetCurrentLineNumber(string txt, string partTxt)
         {
-            return LineWrap.Matches(txt[0..txt.IndexOf(txt?.Trim() ?? "")]).Count;
+            return LineWrap.Matches(txt[0..txt.IndexOf(partTxt?.Trim() ?? "")]).Count;
         }
 
         private async Task<string> ReadFileAsync(string path)
