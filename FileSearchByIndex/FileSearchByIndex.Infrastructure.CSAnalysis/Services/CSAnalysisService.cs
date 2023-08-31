@@ -19,7 +19,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
         public string FileExtension { get => ".cs"; }
         protected virtual Regex PickerOfCommentKeyWords1 { get => new($"((^[\\s]*)|([\\s]+))/// <summary>[\\w\\W]+?/// </summary>"); }
         protected virtual Regex PickerOfCommentKeyWords2 { get => new($"((^[\\s]*)|([\\s]+))/\\*[\\w\\W]+?\\*/"); }
-        protected virtual Regex PickerClassName { get => new($"([\\w\\s]*(class){{1}})[\\w ]+[\\w\\W]*?({{){{1}}"); }
+        protected virtual Regex PickerClassName { get => new($"([\\w\\s]*((?i)class|interface|enum|struct(?-i)){{1}})[ ]+[\\w]+[\\w\\W]*?({{){{1}}"); }
 
         public async Task<IEnumerable<KeyWordsModel>> AnalysisFileKeyWorks(string file, Action<string>? updateHandler, CancellationToken token = default)
         {
