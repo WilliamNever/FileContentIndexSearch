@@ -1,4 +1,5 @@
 using FileSearchByIndex.Core;
+using FileSearchByIndex.Core.Consts;
 using FileSearchByIndex.Core.Interfaces;
 using FileSearchByIndex.Infrastructure.CSAnalysis.Services;
 using FileSearchByIndex.Infrastructure.Services;
@@ -14,6 +15,9 @@ namespace FileSearchByIndex
         [STAThread]
         static void Main()
         {
+            if(!Directory.Exists(EnviConst.IndexesFolderPath))
+                Directory.CreateDirectory(EnviConst.IndexesFolderPath);
+
             #region register services
             ServicesRegister.Init();
             ServicesRegister.Services

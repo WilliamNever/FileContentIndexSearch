@@ -25,10 +25,14 @@ Console.WriteLine("Hello, World!");
     //var msLw = LineWrap.Matches(ss);
     //var spL = ss.Split($"{EnviConst.NewLine}");
 
-    string ss = "public \r\nclass CSAnalysisService : xxx.BaseAnalysis<CSAnalysisService>, IAnalysisService where T:class";
-    ss += "\r\n {CSAnalysisService : BaseAnalysis<CSAnalysisService>, IAnalysisService}";
-    ss += "\r\npublic class CSAnalysisService : BaseAnalysis<CSAnalysisService>, IAnalysisService\r\n{}";
-    var regx = new Regex($"[\\w\\s]*(class){{1}}[\\w\\W]*?({{){{1}}");
+    //string ss = "public \r\nclass CSAnalysisService : xxx.BaseAnalysis<CSAnalysisService>, IAnalysisService where T:class";
+    //ss += "\r\n {CSAnalysisService : BaseAnalysis<CSAnalysisService>, IAnalysisService}";
+    //ss += "\r\npublic class CSAnalysisService : BaseAnalysis<CSAnalysisService>, IAnalysisService\r\n{}";
+    //var regx = new Regex($"[\\w\\s]*(class){{1}}[\\w\\W]*?({{){{1}}");
+    //var ms = regx.Matches(ss);
+
+    string ss = "(var m in matches1)";
+    var regx = new Regex($"[\\s]");
     var ms = regx.Matches(ss);
 
 
