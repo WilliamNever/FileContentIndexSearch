@@ -114,7 +114,8 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                                 catch (Exception ex)
                                 {
                                     _log.Error($"{item} broke - {EnviConst.NewLine}", ex);
-                                    updateHandler?.Invoke($"{item} broke - {ex.Message} - {EnviConst.NewLine}");
+                                    updateHandler?.Invoke($"{item} broke in searching file {file} type is {Core.Enums.EnKeyWordsType.CommandName.ToString()}" +
+                                        $" - {ex.Message} - {EnviConst.NewLine}");
                                 }
                                 finally
                                 {
