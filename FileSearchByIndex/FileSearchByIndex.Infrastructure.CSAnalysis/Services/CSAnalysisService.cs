@@ -86,6 +86,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                 //        });
                 //    }
                 //}
+                var compare = SampleTxtModel.GetComparer();
                 if (mCmds.Any())
                     await Parallel.ForEachAsync(mCmds, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount },
                         async (item, token) =>
@@ -97,7 +98,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                                     {
                                         throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
                                     }
-                                    var list = keysTxtList.Where(x => x.Text.Contains(item));
+                                    var list = keysTxtList.Where(x => x.Text.Contains(item)).Select(x => x).Distinct(compare);
                                     if (list.Any())
                                     {
                                         lock (keyWords)
