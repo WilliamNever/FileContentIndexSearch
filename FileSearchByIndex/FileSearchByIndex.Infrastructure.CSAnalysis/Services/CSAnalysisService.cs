@@ -27,10 +27,10 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
 
         protected virtual Regex PickerOfCommentKeyWords1 { get => new($"((^[\\s]*)|([\\s]+))/// <summary>[\\w\\W]+?/// </summary>"); }
         protected virtual Regex PickerOfCommentKeyWords2 { get => new($"((^[\\s]*)|([\\s]+))/\\*[\\w\\W]+?\\*/"); }
-        protected virtual Regex PickerClassName { get => new($"([\\w\\s]*(class|interface|enum|struct){{1}})[ ]+[\\w]+[\\w\\W]*?({EnviConst.NewLine})"); }
-        protected virtual Regex PickerMethodsName { get => new($"({EnviConst.NewLine})[\\s]+(private|public|protected|internal){{1}}[\\s]+[\\w. <>]+(\\(([\\w.<>\\?: ]+[ ]+[\\w= ]+[,]?)*\\)){{1}}[\\s\\w:]*"); }
-        protected virtual Regex PickerPropertiesName { get => new($"({EnviConst.NewLine})[\\s]+(private|public|protected|internal){{1}}[\\s]+[\\w. <>]+{{"); }
-        protected virtual Regex PickerCommandInUsing { get => new($"({EnviConst.NewLine})[\\s\\w\\(\\).=<>]+[\\w<>]\\([\\w\\W]*?\\)"); }
+        protected virtual Regex PickerClassName { get => new($"([\\w\\s]*(class|interface|enum|struct){{1}})[ ]+[\\w]+[\\w\\W]*?({EnviConst.EnvironmentNewLine}|{EnviConst.SpecNewLine1})"); }
+        protected virtual Regex PickerMethodsName { get => new($"({EnviConst.EnvironmentNewLine}|{EnviConst.SpecNewLine1})[\\s]+(private|public|protected|internal){{1}}[\\s]+[\\w. <>]+(\\(([\\w.<>\\?: ]+[ ]+[\\w= ]+[,]?)*\\)){{1}}[\\s\\w:]*"); }
+        protected virtual Regex PickerPropertiesName { get => new($"({EnviConst.EnvironmentNewLine}|{EnviConst.SpecNewLine1})[\\s]+(private|public|protected|internal){{1}}[\\s]+[\\w. <>]+{{"); }
+        protected virtual Regex PickerCommandInUsing { get => new($"({EnviConst.EnvironmentNewLine}|{EnviConst.SpecNewLine1})[\\s\\w\\(\\).=<>]+[\\w<>]\\([\\w\\W]*?\\)"); }
 
         public async Task<IEnumerable<KeyWordsModel>> AnalysisFileKeyWorks(string file, Action<string>? updateHandler, CancellationToken token = default)
         {
@@ -113,9 +113,9 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                                 }
                                 catch (Exception ex)
                                 {
-                                    _log.Error($"{item} broke - {EnviConst.NewLine}", ex);
+                                    _log.Error($"{item} broke - {EnviConst.EnvironmentNewLine}", ex);
                                     updateHandler?.Invoke($"{item} broke in searching file {file} type is {Core.Enums.EnKeyWordsType.CommandName.ToString()}" +
-                                        $" - {ex.Message} - {EnviConst.NewLine}");
+                                        $" - {ex.Message} - {EnviConst.EnvironmentNewLine}");
                                 }
                                 finally
                                 {
@@ -209,10 +209,10 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
         {
             var kv = new KeyWordsModel
             {
-                KeyWord = EmptyChars.Replace(LineWrap.Replace(m.Value, ""), " ").Trim(),
+                KeyWord = EmptyChars.Replace(LineWrap.Replace(m.Value, ""), " ").Trim().TrimEnd('{'),
                 KeyWordsType = kvType,
             };
-            kv.SampleTxts.Add(new SampleTxtModel { LineNumber = GetCurrentLineNumber(txt, m.Value.Trim()) + 1, Text = m.Value.Trim() });
+            kv.SampleTxts.Add(new SampleTxtModel { LineNumber = GetCurrentLineNumber(txt, m.Value.Trim()) + 1, Text = m.Value.Trim().TrimEnd('{') });
             return kv;
         }
         private int GetCurrentLineNumber(string txt, string partTxt)

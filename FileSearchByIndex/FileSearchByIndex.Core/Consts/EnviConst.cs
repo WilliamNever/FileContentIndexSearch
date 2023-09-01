@@ -11,6 +11,7 @@ namespace FileSearchByIndex.Core.Consts
         private const string IndexFolder = "Indexes";
         public static string IndexesFolderPath { get => Path.Combine(AppFolder, IndexFolder); }
         public static string AppFolder { get => Environment.CurrentDirectory; }
-        public static string NewLine { get => Environment.NewLine; }
+        public static string EnvironmentNewLine { get => Environment.NewLine; }
+        public static string SpecNewLine1 { get => "\n"; }
     }
 }

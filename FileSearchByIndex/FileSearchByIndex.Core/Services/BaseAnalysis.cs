@@ -8,7 +8,7 @@ namespace FileSearchByIndex.Core.Services
     {
         protected Regex StarEmptyChar { get => new(@"^[\s]+"); }
         protected Regex EmptyChars { get => new(@"[\s]+"); }
-        protected Regex LineWrap { get => new($"({EnviConst.NewLine})"); }
+        protected Regex LineWrap { get => new($"({EnviConst.EnvironmentNewLine}|{EnviConst.SpecNewLine1})"); }
         protected Encoding FileEncoding { get; private set; } = Encoding.UTF8;
         public void InitCharEncoding(string charCodeing)
         {

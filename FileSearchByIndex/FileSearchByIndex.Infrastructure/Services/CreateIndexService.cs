@@ -1,4 +1,6 @@
-﻿using FileSearchByIndex.Core.Interfaces;
+﻿using FileSearchByIndex.Core.Consts;
+using FileSearchByIndex.Core.Helper;
+using FileSearchByIndex.Core.Interfaces;
 using FileSearchByIndex.Core.Models;
 using FileSearchByIndex.Core.Services;
 using FileSearchByIndex.Core.Settings;
@@ -17,15 +19,28 @@ namespace FileSearchByIndex.Infrastructure.Services
         }
         public async Task<string> CreateIndexFileAsync(SearchModel search, Action<string>? updateHandler = null, CancellationToken token = default)
         {
-            IndexFilesModel indexForPath = new IndexFilesModel() {
+            IndexFilesModel indexForPath = new IndexFilesModel()
+            {
                 Description = search.IndexDescription,
                 IndexOfFolder = search.SearchPath
             };
             var files = SearchDirectories(new string[] { search.SearchPath }, search, updateHandler, token);
             if (files.Any()) indexForPath.IndexFiles.AddRange(await _fileAnaly.CreateFileIndexListAsync(files, updateHandler, token));
 
+            await CreateIndexJsonFileAsync(search, indexForPath);
+
             updateHandler?.Invoke($"{search.IndexFileFullName} is created - ");
             return search.IndexFileFullName;
+        }
+
+        private async Task CreateIndexJsonFileAsync(SearchModel search, IndexFilesModel indexForPath)
+        {
+            if (!Directory.Exists(EnviConst.IndexesFolderPath)) Directory.CreateDirectory(EnviConst.IndexesFolderPath);
+            using (StreamWriter sw = new StreamWriter(search.IndexFileFullName, false, System.Text.Encoding.UTF8))
+            {
+                sw.Write(ConversionsHelper.SerializeToFormattedJson(indexForPath));
+                await sw.FlushAsync();
+            }
         }
 
         private List<string> SearchDirectories(string[] searchDir, SearchModel searcher, Action<string>? updateHandler = null, CancellationToken token = default)

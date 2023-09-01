@@ -18,6 +18,7 @@ namespace FileSearchByIndex.UserControls
 
             txtPath.Text = @"D:\tAnsly";
             txtIndexFileName.Text = "aat";
+            txtFilter.Text = "*.cs";
         }
         public void SetParentIForm(IForm parent) => pform = parent;
 
@@ -39,13 +40,13 @@ namespace FileSearchByIndex.UserControls
                 IsIncludeSub = cbkIncludeSub.Checked,
                 SearchPath = txtPath.Text,
                 IndexFileName = txtIndexFileName.Text,
-                IndexFileFullName = Path.Combine(EnviConst.IndexesFolderPath, txtIndexFileName.Text, ".json"),
+                IndexFileFullName = Path.Combine(EnviConst.IndexesFolderPath, $"{txtIndexFileName.Text}.json"),
                 IndexDescription = txtDescription.Text
             };
             var rsl = search.SimpleValidateProperties();
             if (rsl.Count > 0)
             {
-                MessageBox.Show(this, " - " + string.Join($"{EnviConst.NewLine} - ", rsl.Select(x => x.ErrorMessage)), "Validate Result -");
+                MessageBox.Show(this, " - " + string.Join($"{EnviConst.EnvironmentNewLine} - ", rsl.Select(x => x.ErrorMessage)), "Validate Result -");
                 return;
             }
             pform?.CleanMessages();

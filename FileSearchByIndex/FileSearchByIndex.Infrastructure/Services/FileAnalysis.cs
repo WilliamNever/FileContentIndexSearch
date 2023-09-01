@@ -58,8 +58,8 @@ namespace FileSearchByIndex.Infrastructure.Services
                             }
                             catch (Exception ex)
                             {
-                                _log.Error($"{item} broke - {EnviConst.NewLine}", ex);
-                                updateHandler?.Invoke($"{item} broke - {ex.Message} - {EnviConst.NewLine}");
+                                _log.Error($"{item} broke - {EnviConst.EnvironmentNewLine}", ex);
+                                updateHandler?.Invoke($"{item} broke - {ex.Message} - {EnviConst.EnvironmentNewLine}");
                             }
                             finally
                             {
