@@ -39,7 +39,7 @@ namespace FileSearchByIndex.Infrastructure.Services
                 updateHandler?.Invoke($"The analysis Service does not exist for the file {file}.");
             }
             var dtFN = DateTime.Now;
-            _log.Info($"Begin - {dtN}, Finished - {dtFN}, Cost {(dtFN-dtN).TotalMinutes} Minutes.");
+            _log.Info($"File - {file}, Begin - {dtN}, Finished - {dtFN}, Cost {(dtFN-dtN).TotalMinutes} Minutes.");
             return WriteSingleAnalysisFile(EnviConst.TmpWorkingFolderPath, tmpFileName, sfi);
         }
         private string WriteSingleAnalysisFile(string BaseFolder, string fileName, object sfi)
