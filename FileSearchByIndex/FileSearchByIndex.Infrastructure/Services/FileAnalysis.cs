@@ -32,6 +32,7 @@ namespace FileSearchByIndex.Infrastructure.Services
                 {
                     sfi.KeyWords.AddRange(keyWords);
                 }
+                updateHandler?.Invoke($"The file {file} was analysised - .");
             }
             else
             {
