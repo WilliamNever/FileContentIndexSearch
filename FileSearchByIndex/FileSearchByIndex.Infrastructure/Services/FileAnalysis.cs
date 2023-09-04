@@ -25,6 +25,11 @@ namespace FileSearchByIndex.Infrastructure.Services
             SingleFileIndexModel sfi = new SingleFileIndexModel { FileFullName = file };
             string tmpFileName = $"{batchid}_{file.ToMD5()}.json";
 
+            if (token.IsCancellationRequested)
+            {
+                throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+            }
+
             var analysis = _getAnalyses(Path.GetExtension(file));
             if (analysis != null)
             {

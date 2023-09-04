@@ -164,8 +164,13 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
             try
             {
                 foreach (var m in matches)
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+                    }
                     keyWords.Add(CreateKeyword(txt, m, Core.Enums.EnKeyWordsType.MethodOrClassName));
-
+                }
             }
             catch (Exception ex)
             {
@@ -199,7 +204,13 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
             try
             {
                 foreach (var m in matches)
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+                    }
                     keyWords.Add(CreateKeyword(txt, m, Core.Enums.EnKeyWordsType.Comment));
+                }
             }
             catch (Exception ex)
             {
