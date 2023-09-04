@@ -71,8 +71,9 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
             var matches = PickerCommandInUsing.Matches(txt).ToList();
             try
             {
-                var keysTxtList = matches.Select(x => new SampleTxtModel { LineNumber = GetCurrentLineNumber(txt, x.Value.Trim()) + 1, Text = x.Value.Trim() }).ToList();
+                var keysTxtList = matches.Select(x => new SampleTxtModel { LineNumber = GetCurrentLineNumber(txt, x.Value.Trim(), x) + 1, Text = x.Value.Trim() }).ToList();
                 var mCmds = keysTxtList.SelectMany(kt => regCommandName.Matches(ClearString(kt.Text.Trim(), "\"")).Select(x => x.Value.Trim().TrimEnd('('))).Distinct().ToList();
+                #region comment out code
                 //foreach (var mc in mCmds)
                 //{
                 //    var list = keysTxtList.Where(x => x.Text.Contains(mc));
@@ -86,6 +87,8 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                 //        });
                 //    }
                 //}
+                #endregion
+
                 var compare = SampleTxtModel.GetComparer();
                 if (mCmds.Any())
                     await Parallel.ForEachAsync(mCmds, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount },
@@ -213,12 +216,12 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                 KeyWord = EmptyChars.Replace(LineWrap.Replace(m.Value, ""), " ").Trim().TrimEnd('{'),
                 KeyWordsType = kvType,
             };
-            kv.SampleTxts.Add(new SampleTxtModel { LineNumber = GetCurrentLineNumber(txt, m.Value.Trim()) + 1, Text = m.Value.Trim().TrimEnd('{') });
+            kv.SampleTxts.Add(new SampleTxtModel { LineNumber = GetCurrentLineNumber(txt, m.Value.Trim(), m) + 1, Text = m.Value.Trim().TrimEnd('{') });
             return kv;
         }
-        private int GetCurrentLineNumber(string txt, string partTxt)
+        private int GetCurrentLineNumber(string txt, string partTxt, Match match)
         {
-            return LineWrap.Matches(txt[0..txt.IndexOf(partTxt?.Trim() ?? "")]).Count;
+            return LineWrap.Matches(txt[0..txt.IndexOf(partTxt?.Trim() ?? "", match.Index)]).Count;
         }
 
         private async Task<string> ReadFileAsync(string path)

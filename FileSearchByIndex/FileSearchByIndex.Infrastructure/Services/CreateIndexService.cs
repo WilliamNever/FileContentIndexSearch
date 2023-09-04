@@ -5,6 +5,7 @@ using FileSearchByIndex.Core.Models;
 using FileSearchByIndex.Core.Services;
 using FileSearchByIndex.Core.Settings;
 using Microsoft.Extensions.Options;
+using System.Collections.Generic;
 
 namespace FileSearchByIndex.Infrastructure.Services
 {
@@ -24,13 +25,59 @@ namespace FileSearchByIndex.Infrastructure.Services
                 Description = search.IndexDescription,
                 IndexOfFolder = search.SearchPath
             };
+
             var files = SearchDirectories(new string[] { search.SearchPath }, search, updateHandler, token);
-            if (files.Any()) indexForPath.IndexFiles.AddRange(await _fileAnaly.CreateFileIndexListAsync(files, updateHandler, token));
+            List<string> PartailIndexFiles = new List<string>();
+            if (files.Any()) { 
+                PartailIndexFiles.AddRange(await _fileAnaly.CreateFileIndexListAsync(files, updateHandler, token));
+
+
+                await Parallel.ForEachAsync(PartailIndexFiles, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount },
+                    async (item, cancellationToken) =>
+                        await Task.Run(async () =>
+                        {
+                            try
+                            {
+                                if (token.IsCancellationRequested)
+                                {
+                                    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+                                }
+                                var singleFileIndex = ReadSingleIndexFromFile(item);
+                                if (singleFileIndex != null)
+                                    lock (indexForPath.IndexFiles)
+                                    {
+                                        indexForPath.IndexFiles.Add(singleFileIndex);
+                                    }
+                            }
+                            catch (Exception ex)
+                            {
+                                _log.Error($"{item} broke - {EnviConst.EnvironmentNewLine}", ex);
+                                updateHandler?.Invoke($"{item} broke - {ex.Message} - {EnviConst.EnvironmentNewLine}");
+                            }
+                            finally
+                            {
+                                if (File.Exists(item)) File.Delete(item);
+                            }
+                        }
+                    , token));
+
+            }
 
             await CreateIndexJsonFileAsync(search, indexForPath);
 
             updateHandler?.Invoke($"{search.IndexFileFullName} is created - ");
             return search.IndexFileFullName;
+        }
+
+        private SingleFileIndexModel? ReadSingleIndexFromFile(string item)
+        {
+            if (File.Exists(item))
+                using (StreamReader reader = new StreamReader(item))
+                {
+                    return ConversionsHelper.DeserializeJson<SingleFileIndexModel>(reader.ReadToEnd());
+                }
+            else
+                return null;
         }
 
         private async Task CreateIndexJsonFileAsync(SearchModel search, IndexFilesModel indexForPath)

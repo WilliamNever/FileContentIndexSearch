@@ -3,6 +3,7 @@ using FileSearchByIndex.Core.Consts;
 using FileSearchByIndex.Core.Helper;
 using FileSearchByIndex.Core.Interfaces;
 using FileSearchByIndex.Core.Models;
+using System.Text.RegularExpressions;
 
 namespace FileSearchByIndex.UserControls
 {
@@ -30,6 +31,7 @@ namespace FileSearchByIndex.UserControls
             if (fbd.ShowDialog() == DialogResult.OK)
             {
                 txtPath.Text = fbd.SelectedPath;
+                txtIndexFileName.Text = Regex.Replace(fbd.SelectedPath, "[\\W\\s]", "_");
             }
         }
         private void btnCreateIndex_Click(object sender, EventArgs e)
@@ -41,7 +43,7 @@ namespace FileSearchByIndex.UserControls
                 SearchPath = txtPath.Text,
                 IndexFileName = txtIndexFileName.Text,
                 IndexFileFullName = Path.Combine(EnviConst.IndexesFolderPath, $"{txtIndexFileName.Text}.json"),
-                IndexDescription = txtDescription.Text
+                IndexDescription = txtDescription.Text,
             };
             var rsl = search.SimpleValidateProperties();
             if (rsl.Count > 0)

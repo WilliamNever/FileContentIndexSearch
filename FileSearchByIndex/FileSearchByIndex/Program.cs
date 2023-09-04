@@ -17,6 +17,8 @@ namespace FileSearchByIndex
         {
             if(!Directory.Exists(EnviConst.IndexesFolderPath))
                 Directory.CreateDirectory(EnviConst.IndexesFolderPath);
+            if(!Directory.Exists(EnviConst.TmpWorkingFolderPath))
+                Directory.CreateDirectory(EnviConst.TmpWorkingFolderPath);
 
             #region register services
             ServicesRegister.Init();
