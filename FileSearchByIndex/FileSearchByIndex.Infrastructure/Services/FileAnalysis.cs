@@ -21,6 +21,7 @@ namespace FileSearchByIndex.Infrastructure.Services
 
         private async Task<string> CreateSingleFileIndexAsync(string batchid, string file, Action<string>? updateHandler, CancellationToken token = default)
         {
+            var dtN = DateTime.Now;
             SingleFileIndexModel sfi = new SingleFileIndexModel { FileFullName = file };
             string tmpFileName = $"{batchid}_{file.ToMD5()}.json";
 
@@ -32,13 +33,13 @@ namespace FileSearchByIndex.Infrastructure.Services
                 {
                     sfi.KeyWords.AddRange(keyWords);
                 }
-                updateHandler?.Invoke($"The file {file} was analysised - .");
             }
             else
             {
                 updateHandler?.Invoke($"The analysis Service does not exist for the file {file}.");
             }
-            
+            var dtFN = DateTime.Now;
+            _log.Info($"Begin - {dtN}, Finished - {dtFN}, Cost {(dtFN-dtN).TotalMinutes} Minutes.");
             return WriteSingleAnalysisFile(EnviConst.TmpWorkingFolderPath, tmpFileName, sfi);
         }
         private string WriteSingleAnalysisFile(string BaseFolder, string fileName, object sfi)
