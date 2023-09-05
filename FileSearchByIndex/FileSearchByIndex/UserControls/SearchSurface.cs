@@ -89,6 +89,7 @@ namespace FileSearchByIndex.UserControls
         public virtual void CancelWorking(string workName = "NoName")
         {
             _cts?.Cancel();
+            Invoke(AcceptMessage, "Begin trying to Cancel the task.... - ");
         }
     }
 }

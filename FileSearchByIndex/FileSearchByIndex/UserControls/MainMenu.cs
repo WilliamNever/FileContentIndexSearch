@@ -29,14 +29,12 @@ namespace FileSearchByIndex.UserControls
 
         private void indexesToolStripMenuItem_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
         {
-            switch(e.ClickedItem.AccessibleName)
+            switch (e.ClickedItem.AccessibleName)
             {
                 case "CreateIndexes":
-                    using(fmCreateIndex fmCI = new fmCreateIndex())
-                    {
-                        fmCI.SetParentIForm(mform!);
-                        fmCI.ShowDialog();
-                    }
+                    fmCreateIndex fmCI = new fmCreateIndex();
+                    fmCI.SetParentIForm(mform!);
+                    fmCI.Show();
                     break;
             }
         }

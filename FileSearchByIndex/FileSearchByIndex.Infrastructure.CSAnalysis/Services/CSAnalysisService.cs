@@ -102,7 +102,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                                 {
                                     if (token.IsCancellationRequested)
                                     {
-                                        throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+                                        return;
                                     }
                                     var list = keysTxtList.Where(x => x.Text.Contains(item)).Select(x => x).Distinct(compare);
                                     if (list.Any())
@@ -170,7 +170,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                 {
                     if (token.IsCancellationRequested)
                     {
-                        throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+                        break;
                     }
                     keyWords.Add(CreateKeyword(txt, m, Core.Enums.EnKeyWordsType.MethodOrClassName));
                 }
@@ -210,7 +210,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                 {
                     if (token.IsCancellationRequested)
                     {
-                        throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+                        break;
                     }
                     keyWords.Add(CreateKeyword(txt, m, Core.Enums.EnKeyWordsType.Comment));
                 }

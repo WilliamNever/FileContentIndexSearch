@@ -21,7 +21,7 @@ namespace FileSearchByIndex.Infrastructure.Services
 
         private async Task<string> CreateSingleFileIndexAsync(string batchid, string file, Action<string>? updateHandler, CancellationToken token = default)
         {
-            var dtN = DateTime.Now;
+            //var dtN = DateTime.Now;
             SingleFileIndexModel sfi = new SingleFileIndexModel { FileFullName = file };
             string tmpFileName = $"{batchid}_{file.ToMD5()}.json";
 
@@ -43,8 +43,8 @@ namespace FileSearchByIndex.Infrastructure.Services
             {
                 updateHandler?.Invoke($"The analysis Service does not exist for the file {file}.");
             }
-            var dtFN = DateTime.Now;
-            _log.Info($"Batch id - {batchid}, File - {file}, Begin - {dtN}, Finished - {dtFN}, Cost {(dtFN-dtN).TotalMinutes} Minutes.");
+            //var dtFN = DateTime.Now;
+            //_log.Info($"Batch id - {batchid}, File - {file}, Begin - {dtN}, Finished - {dtFN}, Cost {(dtFN-dtN).TotalMinutes} Minutes.");
             return WriteSingleAnalysisFile(EnviConst.TmpWorkingFolderPath, tmpFileName, sfi);
         }
         private string WriteSingleAnalysisFile(string BaseFolder, string fileName, object sfi)
@@ -74,7 +74,7 @@ namespace FileSearchByIndex.Infrastructure.Services
                                 {
                                     if (token.IsCancellationRequested)
                                     {
-                                        throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+                                        return;
                                     }
                                     var singleFileIndex = await CreateSingleFileIndexAsync(BatchID, item, updateHandler, token);
                                     if (singleFileIndex != null)
@@ -93,6 +93,10 @@ namespace FileSearchByIndex.Infrastructure.Services
                                 }
                             }
                         , token));
+            }
+            catch(OperationCanceledException ex)
+            {
+                _log.Error($"Batch Id - {BatchID} was Canceled - ", ex);
             }
             catch(Exception ex)
             {
