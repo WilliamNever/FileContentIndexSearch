@@ -4,7 +4,6 @@ using FileSearchByIndex.Core.Models;
 using FileSearchByIndex.Core.Services;
 using FileSearchByIndex.Core.Settings;
 using Microsoft.Extensions.Options;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
