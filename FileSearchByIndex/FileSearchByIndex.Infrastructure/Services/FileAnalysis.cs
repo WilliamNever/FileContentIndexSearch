@@ -44,7 +44,7 @@ namespace FileSearchByIndex.Infrastructure.Services
                 updateHandler?.Invoke($"The analysis Service does not exist for the file {file}.");
             }
             var dtFN = DateTime.Now;
-            _log.Info($"Batch id - {batchid},File - {file}, Begin - {dtN}, Finished - {dtFN}, Cost {(dtFN-dtN).TotalMinutes} Minutes.");
+            _log.Info($"Batch id - {batchid}, File - {file}, Begin - {dtN}, Finished - {dtFN}, Cost {(dtFN-dtN).TotalMinutes} Minutes.");
             return WriteSingleAnalysisFile(EnviConst.TmpWorkingFolderPath, tmpFileName, sfi);
         }
         private string WriteSingleAnalysisFile(string BaseFolder, string fileName, object sfi)
@@ -63,34 +63,41 @@ namespace FileSearchByIndex.Infrastructure.Services
         {
             BatchID = Guid.NewGuid().ToString().Replace("-", "");
             List<string> list = new List<string>();
-            if (files != null && files.Any())
-                await Parallel.ForEachAsync(files, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount },
-                    async (item, cancellationToken) =>
-                        await Task.Run(async () =>
-                        {
-                            try
+            try
+            {
+                if (files != null && files.Any())
+                    await Parallel.ForEachAsync(files, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount },
+                        async (item, cancellationToken) =>
+                            await Task.Run(async () =>
                             {
-                                if (token.IsCancellationRequested)
+                                try
                                 {
-                                    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
-                                }
-                                var singleFileIndex = await CreateSingleFileIndexAsync(BatchID, item, updateHandler, token);
-                                if (singleFileIndex != null)
-                                    lock (list)
+                                    if (token.IsCancellationRequested)
                                     {
-                                        list.Add(singleFileIndex);
+                                        throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
                                     }
+                                    var singleFileIndex = await CreateSingleFileIndexAsync(BatchID, item, updateHandler, token);
+                                    if (singleFileIndex != null)
+                                        lock (list)
+                                        {
+                                            list.Add(singleFileIndex);
+                                        }
+                                }
+                                catch (Exception ex)
+                                {
+                                    _log.Error($"{item} broke - {EnviConst.EnvironmentNewLine}", ex);
+                                    updateHandler?.Invoke($"{item} broke - {ex.Message} - {EnviConst.EnvironmentNewLine}");
+                                }
+                                finally
+                                {
+                                }
                             }
-                            catch (Exception ex)
-                            {
-                                _log.Error($"{item} broke - {EnviConst.EnvironmentNewLine}", ex);
-                                updateHandler?.Invoke($"{item} broke - {ex.Message} - {EnviConst.EnvironmentNewLine}");
-                            }
-                            finally
-                            {
-                            }
-                        }
-                    , token));
+                        , token));
+            }
+            catch(Exception ex)
+            {
+                _log.Error($"Batch Id - {BatchID} was broken - ", ex);
+            }
             return list;
         }
     }

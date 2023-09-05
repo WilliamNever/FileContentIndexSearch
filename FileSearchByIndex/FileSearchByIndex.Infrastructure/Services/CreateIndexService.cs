@@ -28,38 +28,52 @@ namespace FileSearchByIndex.Infrastructure.Services
 
             var files = SearchDirectories(new string[] { search.SearchPath }, search, updateHandler, token);
             List<string> PartailIndexFiles = new List<string>();
-            if (files.Any()) { 
-                PartailIndexFiles.AddRange(await _fileAnaly.CreateFileIndexListAsync(files, updateHandler, token));
+            if (files.Any())
+            {
+                try
+                {
+                    PartailIndexFiles.AddRange(await _fileAnaly.CreateFileIndexListAsync(files, updateHandler, token));
 
-                await Parallel.ForEachAsync(PartailIndexFiles, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount },
-                    async (item, cancellationToken) =>
-                        await Task.Run(async () =>
-                        {
-                            try
+                    await Parallel.ForEachAsync(PartailIndexFiles, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount },
+                        async (item, cancellationToken) =>
+                            await Task.Run(async () =>
                             {
-                                if (token.IsCancellationRequested)
+                                try
                                 {
-                                    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
-                                }
-                                var singleFileIndex = ReadSingleIndexFromFile(item);
-                                if (singleFileIndex != null)
-                                    lock (indexForPath.IndexFiles)
+                                    if (token.IsCancellationRequested)
                                     {
-                                        indexForPath.IndexFiles.Add(singleFileIndex);
+                                        throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
                                     }
+                                    var singleFileIndex = ReadSingleIndexFromFile(item);
+                                    if (singleFileIndex != null)
+                                        lock (indexForPath.IndexFiles)
+                                        {
+                                            indexForPath.IndexFiles.Add(singleFileIndex);
+                                        }
+                                }
+                                catch (Exception ex)
+                                {
+                                    _log.Error($"{item} broke - {EnviConst.EnvironmentNewLine}", ex);
+                                    updateHandler?.Invoke($"{item} broke - {ex.Message} - {EnviConst.EnvironmentNewLine}");
+                                }
+                                finally
+                                {
+                                    if (File.Exists(item)) File.Delete(item);
+                                }
                             }
-                            catch (Exception ex)
-                            {
-                                _log.Error($"{item} broke - {EnviConst.EnvironmentNewLine}", ex);
-                                updateHandler?.Invoke($"{item} broke - {ex.Message} - {EnviConst.EnvironmentNewLine}");
-                            }
-                            finally
-                            {
-                                if (File.Exists(item)) File.Delete(item);
-                            }
-                        }
-                    , token));
-
+                        , token));
+                }
+                catch (Exception ex) 
+                {
+                }
+                finally
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        foreach (var item in PartailIndexFiles) if (File.Exists(item)) File.Delete(item);
+                        throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+                    }
+                }
             }
 
             await CreateIndexJsonFileAsync(search, indexForPath);
