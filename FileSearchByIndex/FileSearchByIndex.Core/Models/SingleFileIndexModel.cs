@@ -1,9 +1,4 @@
 ﻿using FileSearchByIndex.Core.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FileSearchByIndex.Core.Models
 {
@@ -11,9 +6,9 @@ namespace FileSearchByIndex.Core.Models
     {
         public string FileFullName { get; set; }
 
-        [Newtonsoft.Json.JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore]
         public string FileShortName { get { return Path.GetFileName(FileFullName); } }
-        [Newtonsoft.Json.JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore]
         public string FileExtension { get { return Path.GetExtension(FileFullName); } }
 
         public List<KeyWordsModel> KeyWords { get; set; } = new List<KeyWordsModel>();

@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             mnMainMenu = new UserControls.MainMenu();
-
+            searchMainInterFace = new UserControls.SearchMainControl();
             SuspendLayout();
             // 
             // mnMainMenu
@@ -37,14 +37,23 @@
             mnMainMenu.Dock = DockStyle.Top;
             mnMainMenu.Location = new Point(0, 0);
             mnMainMenu.Name = "mnMainMenu";
-            mnMainMenu.Size = new Size(824, 26);
+            mnMainMenu.Size = new Size(828, 26);
             mnMainMenu.TabIndex = 0;
+            // 
+            // searchMainInterFace
+            // 
+            searchMainInterFace.Dock = DockStyle.Fill;
+            searchMainInterFace.Location = new Point(0, 26);
+            searchMainInterFace.Name = "searchMainInterFace";
+            searchMainInterFace.Size = new Size(828, 384);
+            searchMainInterFace.TabIndex = 1;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(824, 524);
+            ClientSize = new Size(828, 410);
+            Controls.Add(searchMainInterFace);
             Controls.Add(mnMainMenu);
             Name = "MainForm";
             Text = "Main Form";
@@ -54,5 +63,6 @@
         #endregion
 
         private UserControls.MainMenu mnMainMenu;
+        private UserControls.SearchMainControl searchMainInterFace;
     }
 }

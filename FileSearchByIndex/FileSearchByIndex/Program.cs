@@ -1,6 +1,7 @@
 using FileSearchByIndex.Core;
 using FileSearchByIndex.Core.Consts;
 using FileSearchByIndex.Core.Interfaces;
+using FileSearchByIndex.CustomForm;
 using FileSearchByIndex.Infrastructure.CSAnalysis.Services;
 using FileSearchByIndex.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,6 +46,7 @@ namespace FileSearchByIndex
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
             Application.Run(new MainForm());
+            //Application.Run(new SearchResultForm());
         }
     }
 }
