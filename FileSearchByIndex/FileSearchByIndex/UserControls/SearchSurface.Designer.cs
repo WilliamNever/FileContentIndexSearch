@@ -150,9 +150,9 @@
             label5.AutoSize = true;
             label5.Location = new Point(381, 15);
             label5.Name = "label5";
-            label5.Size = new Size(87, 15);
+            label5.Size = new Size(101, 15);
             label5.TabIndex = 11;
-            label5.Text = "Separated by '|'";
+            label5.Text = "Sample - *.txt|*.cs";
             // 
             // SearchSurface
             // 

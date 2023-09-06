@@ -31,14 +31,16 @@
             searchSurface = new UserControls.SearchSurface();
             btnCancel = new Button();
             txtInfo = new TextBox();
+            pnlContainer = new Panel();
+            pnlContainer.SuspendLayout();
             SuspendLayout();
             // 
             // searchSurface
             // 
             searchSurface.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            searchSurface.Location = new Point(12, 12);
+            searchSurface.Location = new Point(3, 3);
             searchSurface.Name = "searchSurface";
-            searchSurface.Size = new Size(776, 130);
+            searchSurface.Size = new Size(770, 127);
             searchSurface.TabIndex = 0;
             // 
             // btnCancel
@@ -61,6 +63,15 @@
             txtInfo.Size = new Size(776, 300);
             txtInfo.TabIndex = 2;
             // 
+            // pnlContainer
+            // 
+            pnlContainer.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            pnlContainer.Controls.Add(searchSurface);
+            pnlContainer.Location = new Point(12, 12);
+            pnlContainer.Name = "pnlContainer";
+            pnlContainer.Size = new Size(776, 130);
+            pnlContainer.TabIndex = 3;
+            // 
             // fmCreateIndex
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -68,9 +79,10 @@
             ClientSize = new Size(800, 460);
             Controls.Add(txtInfo);
             Controls.Add(btnCancel);
-            Controls.Add(searchSurface);
+            Controls.Add(pnlContainer);
             Name = "fmCreateIndex";
             Text = "CreateIndex";
+            pnlContainer.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -80,5 +92,6 @@
         private UserControls.SearchSurface searchSurface;
         private Button btnCancel;
         private TextBox txtInfo;
+        private Panel pnlContainer;
     }
 }
