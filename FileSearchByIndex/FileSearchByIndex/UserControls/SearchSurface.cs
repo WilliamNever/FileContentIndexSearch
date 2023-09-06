@@ -12,6 +12,7 @@ namespace FileSearchByIndex.UserControls
         protected log4net.ILog _log;
         private IForm? pform = null;
         protected CancellationTokenSource _cts;
+        protected Task RunningTask;
         public SearchSurface()
         {
             _log = log4net.LogManager.GetLogger(GetType());
@@ -54,7 +55,7 @@ namespace FileSearchByIndex.UserControls
             pform?.CleanMessages();
             AcceptMessage($"Beginning Searching - {Environment.NewLine}");
             AcceptMessage($"{ConversionsHelper.SerializeToFormattedJson(search)}{Environment.NewLine}{Environment.NewLine}");
-            _ = RunAsync(search);
+            RunningTask = RunAsync(search);
         }
         private async Task RunAsync(SearchModel search)
         {
@@ -89,7 +90,8 @@ namespace FileSearchByIndex.UserControls
         public virtual void CancelWorking(string workName = "NoName")
         {
             _cts?.Cancel();
-            Invoke(AcceptMessage, "Begin trying to Cancel the task.... - ");
+            if (RunningTask != null && RunningTask.Status != TaskStatus.RanToCompletion)
+                Invoke(AcceptMessage, $"Current status is {RunningTask.Status} - Begin trying to Cancel the task....");
         }
     }
 }

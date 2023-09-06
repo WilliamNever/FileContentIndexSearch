@@ -32,6 +32,7 @@
             btnCancel = new Button();
             txtInfo = new TextBox();
             pnlContainer = new Panel();
+            btnClear = new Button();
             pnlContainer.SuspendLayout();
             SuspendLayout();
             // 
@@ -45,7 +46,7 @@
             // 
             // btnCancel
             // 
-            btnCancel.Location = new Point(12, 119);
+            btnCancel.Location = new Point(3, 107);
             btnCancel.Name = "btnCancel";
             btnCancel.Size = new Size(75, 23);
             btnCancel.TabIndex = 1;
@@ -67,11 +68,23 @@
             // 
             pnlContainer.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             pnlContainer.BackColor = Color.Transparent;
+            pnlContainer.Controls.Add(btnClear);
+            pnlContainer.Controls.Add(btnCancel);
             pnlContainer.Controls.Add(searchSurface);
             pnlContainer.Location = new Point(12, 12);
             pnlContainer.Name = "pnlContainer";
             pnlContainer.Size = new Size(776, 130);
             pnlContainer.TabIndex = 3;
+            // 
+            // btnClear
+            // 
+            btnClear.Location = new Point(84, 107);
+            btnClear.Name = "btnClear";
+            btnClear.Size = new Size(75, 23);
+            btnClear.TabIndex = 4;
+            btnClear.Text = "Clear";
+            btnClear.UseVisualStyleBackColor = true;
+            btnClear.Click += btnClear_Click;
             // 
             // fmCreateIndex
             // 
@@ -79,7 +92,6 @@
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 460);
             Controls.Add(txtInfo);
-            Controls.Add(btnCancel);
             Controls.Add(pnlContainer);
             Name = "fmCreateIndex";
             Text = "CreateIndex";
@@ -94,5 +106,6 @@
         private Button btnCancel;
         private TextBox txtInfo;
         private Panel pnlContainer;
+        private Button btnClear;
     }
 }

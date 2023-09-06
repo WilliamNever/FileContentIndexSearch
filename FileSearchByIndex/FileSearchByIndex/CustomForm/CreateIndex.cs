@@ -27,5 +27,10 @@ namespace FileSearchByIndex.CustomForm
         {
             searchSurface.CancelWorking();
         }
+
+        private void btnClear_Click(object sender, EventArgs e)
+        {
+            txtInfo.Text = "";
+        }
     }
 }
