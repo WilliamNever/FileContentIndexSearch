@@ -66,6 +66,7 @@
             // pnlContainer
             // 
             pnlContainer.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            pnlContainer.BackColor = Color.Transparent;
             pnlContainer.Controls.Add(searchSurface);
             pnlContainer.Location = new Point(12, 12);
             pnlContainer.Name = "pnlContainer";
