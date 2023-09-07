@@ -6,10 +6,12 @@ namespace FileSearchByIndex.CustomForm
     {
         protected log4net.ILog _log;
         private IForm? mform = null;
+        protected string WinTitle;
         public fmCreateIndex()
         {
             _log = log4net.LogManager.GetLogger(GetType());
             InitializeComponent();
+            WinTitle = Text;
             searchSurface.SetParentIForm(this);
         }
 
@@ -19,9 +21,17 @@ namespace FileSearchByIndex.CustomForm
         {
             txtInfo.Text = string.Empty;
         }
-        public virtual void AcceptMessage(string message)
+        public virtual void AcceptMessage(string message, string location = "")
         {
-            txtInfo.Text += $"{message ?? string.Empty}{Environment.NewLine}";
+            switch (location)
+            {
+                case "title":
+                    Text = $"{WinTitle} - {message}";
+                    break;
+                default:
+                    txtInfo.Text += $"{message ?? string.Empty}{Environment.NewLine}";
+                    break;
+            }
         }
         private void btnCancel_Click(object sender, EventArgs e)
         {

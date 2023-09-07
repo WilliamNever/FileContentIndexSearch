@@ -54,6 +54,7 @@ namespace FileSearchByIndex.UserControls
             }
             pform?.CleanMessages();
             AcceptMessage($"Beginning Searching - {Environment.NewLine}");
+            AcceptMessage(txtPath.Text, "title");
             AcceptMessage($"{ConversionsHelper.SerializeToFormattedJson(search)}{Environment.NewLine}{Environment.NewLine}");
             RunningTask = RunAsync(search);
         }
@@ -83,9 +84,9 @@ namespace FileSearchByIndex.UserControls
                 Enabled = true;
             }
         }
-        public void AcceptMessage(string mess)
+        public void AcceptMessage(string mess, string location = "")
         {
-            pform?.AcceptMessage(mess);
+            pform?.AcceptMessage(mess, location);
         }
         public virtual void CancelWorking(string workName = "NoName")
         {

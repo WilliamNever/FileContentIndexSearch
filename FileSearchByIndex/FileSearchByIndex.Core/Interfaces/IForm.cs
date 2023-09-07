@@ -10,7 +10,7 @@ namespace FileSearchByIndex.Core.Interfaces
     {
         void SetParentIForm(IForm parent) { throw new NotImplementedException(); }
         void CleanMessages() { throw new NotImplementedException(); }
-        void AcceptMessage(string message) { throw new NotImplementedException(); }
+        void AcceptMessage(string message, string location = "") { throw new NotImplementedException(); }
         void CancelWorking(string workName = "NoName") { throw new NotImplementedException(); }
     }
 }
