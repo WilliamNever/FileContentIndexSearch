@@ -64,7 +64,7 @@ namespace FileSearchByIndex.UserControls
             ICreateIndexService icrs = ServicesRegister.GetService<ICreateIndexService>();
             Action<string> action = str =>
             {
-                Invoke(AcceptMessage, str);
+                Invoke(AcceptMessage, str, "");
             };
             try
             {
