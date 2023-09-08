@@ -4,7 +4,7 @@ namespace FileSearchByIndex.Core.Models
 {
     public class SingleFileIndexModel
     {
-        public string FileFullName { get; set; }
+        public string FileFullName { get; set; } = null!;
 
         [System.Text.Json.Serialization.JsonIgnore]
         public string FileShortName { get { return Path.GetFileName(FileFullName); } }

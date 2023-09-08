@@ -16,7 +16,7 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
         {
             _taskSettings = TaskSettings.Value;
             Config = configs?.Value.FirstOrDefault(x => x?.FileExtension?.Equals(FileExtension, StringComparison.OrdinalIgnoreCase) ?? false);
-            if (Config != null) InitCharEncoding(Config.EncodingName);
+            if (Config?.EncodingName != null) InitCharEncoding(Config.EncodingName!);
         }
 
         public Task<IEnumerable<KeyWordsModel>> AnalysisFileKeyWorks(string file, Action<string>? updateHandler, CancellationToken token = default)

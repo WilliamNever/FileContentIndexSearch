@@ -10,9 +10,9 @@ namespace FileSearchByIndex.Infrastructure.Services
 {
     public class FileAnalysis : BaseService<FileAnalysis>, IFileAnalysis
     {
-        protected Func<string, IAnalysisService?> _getAnalyses;
-        protected TaskThreadSettings _taskSettings;
-        public string BatchID { get; protected set; }
+        protected Func<string, IAnalysisService?> _getAnalyses = null!;
+        protected TaskThreadSettings _taskSettings = null!;
+        public string BatchID { get; protected set; } = null!;
         public FileAnalysis(IOptions<TaskThreadSettings> TaskSettings, Func<string, IAnalysisService?> getAnalyses)
         {
             _getAnalyses = getAnalyses;

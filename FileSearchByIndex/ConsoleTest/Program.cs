@@ -38,16 +38,46 @@ Console.WriteLine("Hello, World!");
     //var ms = regx.Matches(ss);
     //var ot = regx.Replace(ss, "-");
 
-    string txt = "";
-    using(StreamReader sr=new StreamReader(@"D:\WQPersonal\GitsProjects\FileContentIndexSearch\FileSearchByIndex\FileSearchByIndex\bin\Debug\net6.0-windows\Indexes\WorkSpaces.DevAzure.json",true)) 
-    {
-        txt = sr.ReadToEnd();
-    }
-    var obj = ConversionsHelper.DeserializeJson<IndexFilesModel>(txt);
-    var files = obj.IndexFiles.Where(x => x.KeyWords.Any(y => y.KeyWord.Contains("Save") && y.Frequency > 1)).ToList();
+    //string txt = "";
+    //using(StreamReader sr=new StreamReader(@"D:\WQPersonal\GitsProjects\FileContentIndexSearch\FileSearchByIndex\FileSearchByIndex\bin\Debug\net6.0-windows\Indexes\WorkSpaces.DevAzure.json",true)) 
+    //{
+    //    txt = sr.ReadToEnd();
+    //}
+    //var obj = ConversionsHelper.DeserializeJson<IndexFilesModel>(txt);
+    //var files = obj.IndexFiles.Where(x => x.KeyWords.Any(y => y.KeyWord.Contains("Save") && y.Frequency > 1)).ToList();
 
-    var ii = 0 ;
+
+    Func<string, string, bool, string> xClearString = (txt, padString, ignoreCase) =>
+    {
+        var regDCom = ignoreCase ? new Regex($"{padString}", RegexOptions.IgnoreCase) : new Regex($"{padString}");
+        var regString = ignoreCase ? new Regex($"{padString}[\\w\\W]*?{padString}", RegexOptions.IgnoreCase) : new Regex($"{padString}[\\w\\W]*?{padString}");
+        if ((regDCom.Matches(txt).Count & 1) > 0)
+        {
+            txt += padString;
+        }
+        var str = regString.Replace(txt, "");
+        return str;
+    };
+
+    string ss = "public \r\nclass CSAnalysisService : xxx.BaseAnalysis\"<CSAnalysisService>, IAnalysisService where T:class";
+    var res = ClearString(ss, "\"", true);
+
+    var ii = 0;
     Console.WriteLine("......");
     Console.ReadLine();
 }
 
+
+string ClearString(string txt, string regExpString, bool ignoreCase = true, string? appendString = null)
+{
+    var regDCom = ignoreCase ? new Regex($"{regExpString}", RegexOptions.IgnoreCase)
+        : new Regex($"{regExpString}");
+    var regString = ignoreCase ? new Regex($"{regExpString}[\\w\\W]*?{regExpString}", RegexOptions.IgnoreCase)
+        : new Regex($"{regExpString}[\\w\\W]*?{regExpString}");
+    if ((regDCom.Matches(txt).Count & 1) > 0)
+    {
+        txt += (appendString == null ? regExpString : appendString);
+    }
+    var str = regString.Replace(txt, "");
+    return str;
+}

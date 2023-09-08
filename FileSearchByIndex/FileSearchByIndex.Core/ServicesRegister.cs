@@ -14,7 +14,7 @@ namespace FileSearchByIndex.Core
     public static class ServicesRegister
     {
         public static IServiceCollection Services { get; set; } = new ServiceCollection();
-        public static IServiceProvider Provider { get; set; }
+        public static IServiceProvider Provider { get; set; } = null!;
 
         public static void Build()
         {

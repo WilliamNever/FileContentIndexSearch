@@ -5,7 +5,7 @@ namespace FileSearchByIndex.Core.Models
     public class SampleTxtModel : IEqualityComparer<SampleTxtModel>
     {
         public int LineNumber { get; set; }
-        public string Text { get; set; }
+        public string? Text { get; set; }
 
         public bool Equals(SampleTxtModel? x, SampleTxtModel? y)
         {

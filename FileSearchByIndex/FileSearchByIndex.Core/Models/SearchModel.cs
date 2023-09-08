@@ -12,10 +12,10 @@ namespace FileSearchByIndex.Core.Models
         public string? Filter { get; set; }
         public bool IsIncludeSub { get; set; }
         [Required(ErrorMessage = "Index file name is required")]
-        public string IndexFileName { get; set; }
-        public string IndexFileFullName { get; set; }
-        public string IndexDescription { get; set; }
+        public string IndexFileName { get; set; } = null!;
+        public string IndexFileFullName { get; set; } = null!;
+        public string? IndexDescription { get; set; }
         [Required(ErrorMessage = "Search path is required")]
-        public string SearchPath { get; set; }
+        public string SearchPath { get; set; } = null!;
     }
 }

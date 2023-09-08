@@ -16,7 +16,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
         {
             _taskSettings = TaskSettings.Value;
             Config = configs?.Value.FirstOrDefault(x => x?.FileExtension?.Equals(FileExtension, StringComparison.OrdinalIgnoreCase) ?? false);
-            if (Config != null) InitCharEncoding(Config.EncodingName);
+            if (Config?.EncodingName != null) InitCharEncoding(Config.EncodingName);
         }
 
         public Guid Id { get; set; } = Guid.NewGuid();
@@ -74,7 +74,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
             try
             {
                 var keysTxtList = matches.Select(x => new SampleTxtModel { LineNumber = GetCurrentLineNumber(txt, x.Value.Trim(), x) + 1, Text = x.Value.Trim() }).ToList();
-                var mCmds = keysTxtList.SelectMany(kt => regCommandName.Matches(ClearString(kt.Text.Trim(), "\"")).Select(x => x.Value.Trim().TrimEnd('('))).Distinct().ToList();
+                var mCmds = keysTxtList.SelectMany(kt => regCommandName.Matches(ClearString(kt?.Text?.Trim()??"", "\"")).Select(x => x.Value.Trim().TrimEnd('('))).Distinct().ToList();
                 #region comment out code
                 //foreach (var mc in mCmds)
                 //{
@@ -95,7 +95,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                 if (mCmds.Any())
                     await Parallel.ForEachAsync(mCmds, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount },
                         async (item, token) =>
-                            await Task.Run(async () =>
+                            await Task.Run(() =>
                             {
                                 try
                                 {
@@ -137,15 +137,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
 
             return keyWords;
         }
-        private string ClearString(string txt, string padString)
-        {
-            if ((regDCom.Matches(txt).Count & 1) > 0)
-            {
-                txt += padString;
-            }
-            var str = regString.Replace(txt, "");
-            return str;
-        }
+
         /// <summary>
         /// Pick up keyworkds in class, method names
         /// </summary>
@@ -159,7 +151,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
             /*
              * Pick up the class, method and properties names
              */
-            List<KeyWordsModel> keyWords = new List<KeyWordsModel>();
+            List<KeyWordsModel> keyWords = new();
             var matches = PickerClassName.Matches(txt).ToList();
             matches.AddRange(PickerMethodsName.Matches(txt));
             matches.AddRange(PickerPropertiesName.Matches(txt));
@@ -200,7 +192,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                 2-
                     /*  *_/
              */
-            List<KeyWordsModel> keyWords = new List<KeyWordsModel>();
+            List<KeyWordsModel> keyWords = new();
             var matches = PickerOfCommentKeyWords1.Matches(txt).ToList();
             matches.AddRange(PickerOfCommentKeyWords2.Matches(txt));
             try
@@ -235,24 +227,6 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
         private int GetCurrentLineNumber(string txt, string partTxt, Match match)
         {
             return LineWrap.Matches(txt[0..txt.IndexOf(partTxt?.Trim() ?? "", match.Index)]).Count;
-        }
-
-        private async Task<string> ReadFileAsync(string path)
-        {
-            try
-            {
-                using (StreamReader sr = new(path, FileEncoding, true
-                    , new FileStreamOptions() { Mode = FileMode.Open, Access = FileAccess.Read, Share = FileShare.ReadWrite }
-                    ))
-                {
-                    return sr.ReadToEnd();
-                }
-            }
-            catch (Exception ex)
-            {
-                _log.Error($"Error(s) in Reading file {path}", ex);
-                throw;
-            }
         }
     }
 }

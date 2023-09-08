@@ -36,7 +36,7 @@ namespace FileSearchByIndex.Infrastructure.Services
 
                     await Parallel.ForEachAsync(PartailIndexFiles, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount },
                         async (item, cancellationToken) =>
-                            await Task.Run(async () =>
+                            await Task.Run( () =>
                             {
                                 try
                                 {
@@ -63,7 +63,7 @@ namespace FileSearchByIndex.Infrastructure.Services
                             }
                         , token));
                 }
-                catch (Exception ex) 
+                catch (Exception)
                 {
                 }
                 finally
