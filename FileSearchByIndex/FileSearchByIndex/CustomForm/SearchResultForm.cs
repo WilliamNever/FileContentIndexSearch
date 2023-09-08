@@ -1,15 +1,6 @@
-﻿using FileSearchByIndex.Core.Interfaces;
-using FileSearchByIndex.Core.Models;
+﻿using FileSearchByIndex.Core;
+using FileSearchByIndex.Core.Interfaces;
 using FileSearchByIndex.Core.ParameterModels;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace FileSearchByIndex.CustomForm
 {
@@ -49,6 +40,7 @@ namespace FileSearchByIndex.CustomForm
         {
             Invoke(AcceptMessage, $"Start to Search ...", "start");
 
+            var searching = ServicesRegister.GetService<ISearchingIndexFilesSerivce>();
 
             Invoke(AcceptMessage, $"Searching is finished ...", "stop");
         }
