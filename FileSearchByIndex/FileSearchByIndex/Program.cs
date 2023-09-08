@@ -4,6 +4,7 @@ using FileSearchByIndex.Core.Interfaces;
 using FileSearchByIndex.CustomForm;
 using FileSearchByIndex.Infrastructure.CSAnalysis.Services;
 using FileSearchByIndex.Infrastructure.Services;
+using FileSearchByIndex.Infrastructure.TextAnalysis.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FileSearchByIndex
@@ -27,6 +28,9 @@ namespace FileSearchByIndex
                 .AddTransient<ICreateIndexService, CreateIndexService>()
                 .AddTransient<IFileAnalysis, FileAnalysis>()
                 .AddTransient<IAnalysisService, CSAnalysisService>()
+                .AddTransient<IAnalysisService, TxtAnalysisEntrance>()
+                .AddTransient<IAnalysisService, ENTextAnalysisService>()
+                .AddTransient<IAnalysisService, CHTextAnalysisService>()
                 ;
 
             ServicesRegister.Services

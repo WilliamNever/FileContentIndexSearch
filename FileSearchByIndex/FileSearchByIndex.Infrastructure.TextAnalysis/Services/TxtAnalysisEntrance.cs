@@ -7,8 +7,9 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
 {
     public class TxtAnalysisEntrance : BaseAnalysis<TxtAnalysisEntrance>, IAnalysisService
     {
-        protected InboundFileConfig? Config;
         public string FileExtension => ".txt";
+
+        protected InboundFileConfig? Config;
         protected Func<string, IAnalysisService?> _getAnalyses;
         public TxtAnalysisEntrance(Func<string, IAnalysisService?> getAnalyses, IOptions<List<InboundFileConfig>> configs)
         {

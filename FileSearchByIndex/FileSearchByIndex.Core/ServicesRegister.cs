@@ -30,7 +30,7 @@ namespace FileSearchByIndex.Core
         {
             IConfigurationBuilder builder = new ConfigurationBuilder().AddJsonFile($"{EnviConst.AppFolder}\\appsettings.json", false, true);
             IConfigurationRoot root = builder.Build();
-            //var tts = root.GetSection("InboundFileConfigs").Get<List<InboundFileConfig>>();
+            var tts = root.GetSection("InboundFileConfigs").Get<List<InboundFileConfig>>();
             Services.Configure<TaskThreadSettings>(root.GetSection(nameof(TaskThreadSettings)));
             Services.Configure<List<InboundFileConfig>>(root.GetSection("InboundFileConfigs"));
         }

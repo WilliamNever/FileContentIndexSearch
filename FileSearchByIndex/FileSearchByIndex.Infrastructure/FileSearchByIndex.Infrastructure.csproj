@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\FileSearchByIndex.Infrastructure.CSAnalysis\FileSearchByIndex.Infrastructure.CSAnalysis.csproj" />
     <ProjectReference Include="..\FileSearchByIndex.Infrastructure.JSAnalysis\FileSearchByIndex.Infrastructure.JSAnalysis.csproj" />
+    <ProjectReference Include="..\FileSearchByIndex.Infrastructure.TextAnalysis\FileSearchByIndex.Infrastructure.TextAnalysis.csproj" />
   </ItemGroup>
 
 </Project>
