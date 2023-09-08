@@ -13,8 +13,10 @@ namespace FileSearchByIndex.UserControls
 {
     public partial class SearchMainControl : UserControl
     {
+        protected log4net.ILog _log = null!;
         public SearchMainControl()
         {
+            _log = log4net.LogManager.GetLogger(GetType());
             InitializeComponent();
         }
 
@@ -24,6 +26,14 @@ namespace FileSearchByIndex.UserControls
             if (dlg.ShowDialog() == DialogResult.OK)
             {
             }
+        }
+
+        private void btnSearch_Click(object sender, EventArgs e)
+        {
+            var SearchResultForm = new SearchResultForm();
+            SearchResultForm.Show();
+            _ = SearchResultForm.StartWorkingAsync(new Core.ParameterModels.SearchTaskModel());
+
         }
     }
 }

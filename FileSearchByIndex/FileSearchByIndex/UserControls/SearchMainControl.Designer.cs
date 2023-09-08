@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             pnlMain = new Panel();
+            chbIsSearchingInSampleTxt = new CheckBox();
             btnSearch = new Button();
             ListSearchingPath = new ListBox();
             txtFileFilter = new TextBox();
@@ -36,7 +37,6 @@
             txtKeywords = new TextBox();
             lblKeyword = new Label();
             btnPickPaths = new Button();
-            chbIsSearchingInSampleTxt = new CheckBox();
             pnlMain.SuspendLayout();
             SuspendLayout();
             // 
@@ -56,6 +56,16 @@
             pnlMain.Size = new Size(772, 381);
             pnlMain.TabIndex = 2;
             // 
+            // chbIsSearchingInSampleTxt
+            // 
+            chbIsSearchingInSampleTxt.AutoSize = true;
+            chbIsSearchingInSampleTxt.Location = new Point(3, 356);
+            chbIsSearchingInSampleTxt.Name = "chbIsSearchingInSampleTxt";
+            chbIsSearchingInSampleTxt.Size = new Size(168, 19);
+            chbIsSearchingInSampleTxt.TabIndex = 7;
+            chbIsSearchingInSampleTxt.Text = "Is Searching in Sample Text";
+            chbIsSearchingInSampleTxt.UseVisualStyleBackColor = true;
+            // 
             // btnSearch
             // 
             btnSearch.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
@@ -65,6 +75,7 @@
             btnSearch.TabIndex = 6;
             btnSearch.Text = "Search";
             btnSearch.UseVisualStyleBackColor = true;
+            btnSearch.Click += btnSearch_Click;
             // 
             // ListSearchingPath
             // 
@@ -125,16 +136,6 @@
             btnPickPaths.Text = "Pick Paths";
             btnPickPaths.UseVisualStyleBackColor = true;
             btnPickPaths.Click += btnPickPaths_Click;
-            // 
-            // chbIsSearchingInSampleTxt
-            // 
-            chbIsSearchingInSampleTxt.AutoSize = true;
-            chbIsSearchingInSampleTxt.Location = new Point(3, 356);
-            chbIsSearchingInSampleTxt.Name = "chbIsSearchingInSampleTxt";
-            chbIsSearchingInSampleTxt.Size = new Size(168, 19);
-            chbIsSearchingInSampleTxt.TabIndex = 7;
-            chbIsSearchingInSampleTxt.Text = "Is Searching in Sample Text";
-            chbIsSearchingInSampleTxt.UseVisualStyleBackColor = true;
             // 
             // SearchMainControl
             // 
