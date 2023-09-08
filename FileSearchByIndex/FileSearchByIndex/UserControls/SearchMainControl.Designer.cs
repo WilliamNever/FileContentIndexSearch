@@ -36,11 +36,13 @@
             txtKeywords = new TextBox();
             lblKeyword = new Label();
             btnPickPaths = new Button();
+            chbIsSearchingInSampleTxt = new CheckBox();
             pnlMain.SuspendLayout();
             SuspendLayout();
             // 
             // pnlMain
             // 
+            pnlMain.Controls.Add(chbIsSearchingInSampleTxt);
             pnlMain.Controls.Add(btnSearch);
             pnlMain.Controls.Add(ListSearchingPath);
             pnlMain.Controls.Add(txtFileFilter);
@@ -124,6 +126,16 @@
             btnPickPaths.UseVisualStyleBackColor = true;
             btnPickPaths.Click += btnPickPaths_Click;
             // 
+            // chbIsSearchingInSampleTxt
+            // 
+            chbIsSearchingInSampleTxt.AutoSize = true;
+            chbIsSearchingInSampleTxt.Location = new Point(3, 356);
+            chbIsSearchingInSampleTxt.Name = "chbIsSearchingInSampleTxt";
+            chbIsSearchingInSampleTxt.Size = new Size(168, 19);
+            chbIsSearchingInSampleTxt.TabIndex = 7;
+            chbIsSearchingInSampleTxt.Text = "Is Searching in Sample Text";
+            chbIsSearchingInSampleTxt.UseVisualStyleBackColor = true;
+            // 
             // SearchMainControl
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -146,5 +158,6 @@
         private Label lblKeyword;
         private ListBox ListSearchingPath;
         private Button btnPickPaths;
+        private CheckBox chbIsSearchingInSampleTxt;
     }
 }

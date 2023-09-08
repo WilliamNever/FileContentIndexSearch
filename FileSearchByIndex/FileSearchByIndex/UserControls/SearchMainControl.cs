@@ -22,7 +22,7 @@ namespace FileSearchByIndex.UserControls
         {
             DlgPichSearchPaths dlg = new DlgPichSearchPaths();
             if (dlg.ShowDialog() == DialogResult.OK)
-            { 
+            {
             }
         }
     }
