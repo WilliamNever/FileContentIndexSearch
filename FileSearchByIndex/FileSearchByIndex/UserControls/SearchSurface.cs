@@ -18,9 +18,9 @@ namespace FileSearchByIndex.UserControls
             _log = log4net.LogManager.GetLogger(GetType());
             InitializeComponent();
 
-            txtPath.Text = @"D:\tAnsly";
+            txtPath.Text = @"c:\tAnsly";
             txtIndexFileName.Text = "aat";
-            txtFilter.Text = "*.cs";
+            txtFilter.Text = "*.txt";
         }
         public void SetParentIForm(IForm parent) => pform = parent;
 

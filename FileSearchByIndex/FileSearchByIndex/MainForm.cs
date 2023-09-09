@@ -1,4 +1,5 @@
 using FileSearchByIndex.Core.Interfaces;
+using System.Text;
 
 namespace FileSearchByIndex
 {

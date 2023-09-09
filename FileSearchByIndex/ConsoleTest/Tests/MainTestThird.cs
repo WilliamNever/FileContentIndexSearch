@@ -19,6 +19,11 @@ namespace ConsoleTest.Tests
             var reg = new Regex($"[\u4e00-\u9fa5]|([\\w]+)");
             var matches = reg.Matches(ss);
             var list1 = matches.Select(x => x.Value).ToList();
+
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            var enc = Encoding.GetEncoding("gb2312");
+            var enc1 = Encoding.GetEncoding("gbk");
+            var encs = Encoding.GetEncodings();
         }
         public async static Task Main1Async()
         {

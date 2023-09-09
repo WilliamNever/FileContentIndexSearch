@@ -8,10 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Program.cs~RF13fb68e.TMP" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\FileSearchByIndex.Infrastructure\FileSearchByIndex.Infrastructure.csproj" />
   </ItemGroup>
 

@@ -6,6 +6,7 @@ using FileSearchByIndex.Infrastructure.CSAnalysis.Services;
 using FileSearchByIndex.Infrastructure.Services;
 using FileSearchByIndex.Infrastructure.TextAnalysis.Services;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text;
 
 namespace FileSearchByIndex
 {
@@ -17,7 +18,8 @@ namespace FileSearchByIndex
         [STAThread]
         static void Main()
         {
-            if(!Directory.Exists(EnviConst.IndexesFolderPath))
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            if (!Directory.Exists(EnviConst.IndexesFolderPath))
                 Directory.CreateDirectory(EnviConst.IndexesFolderPath);
             if(!Directory.Exists(EnviConst.TmpWorkingFolderPath))
                 Directory.CreateDirectory(EnviConst.TmpWorkingFolderPath);
@@ -29,8 +31,8 @@ namespace FileSearchByIndex
                 .AddTransient<IFileAnalysis, FileAnalysis>()
                 .AddTransient<IAnalysisService, CSAnalysisService>()
                 .AddTransient<IAnalysisService, TxtAnalysisEntrance>()
-                .AddTransient<IAnalysisService, ENTextAnalysisService>()
-                .AddTransient<IAnalysisService, CHTextAnalysisService>()
+                //.AddTransient<IAnalysisService, ENTextAnalysisService>()
+                //.AddTransient<IAnalysisService, CHTextAnalysisService>()
                 .AddTransient<ISearchingIndexFilesSerivce, SearchingIndexFilesSerivce>()
                 ;
 
