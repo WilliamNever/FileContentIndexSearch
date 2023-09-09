@@ -7,7 +7,7 @@ namespace FileSearchByIndex.Core.Services
     public class BaseAnalysis<T> : BaseService<T> where T : class
     {
         protected Regex EmptyChars { get => new(@"[\s]+"); }
-        protected Regex LineWrap { get => new($"({EnviConst.EnvironmentNewLine}|{EnviConst.SpecNewLine1})"); }
+        protected Regex LineWrap { get => new($"((\r)?{EnviConst.SpecNewLine1})"); }
         protected Encoding FileEncoding { get; private set; } = Encoding.UTF8;
         public void InitCharEncoding(string charCodeing)
         {

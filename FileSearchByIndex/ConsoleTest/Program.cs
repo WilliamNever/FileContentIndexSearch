@@ -1,4 +1,5 @@
 ﻿using ConsoleTest.TaskTests;
+using ConsoleTest.Tests;
 using FileSearchByIndex.Core.Consts;
 using FileSearchByIndex.Core.Helper;
 using FileSearchByIndex.Core.Interfaces;
@@ -9,7 +10,7 @@ using System.Text.RegularExpressions;
 Console.WriteLine("Hello, World!");
 
 {
-
+    await MainTestThird.Main2Async();
 
     var ii = 0;
     Console.WriteLine("......");

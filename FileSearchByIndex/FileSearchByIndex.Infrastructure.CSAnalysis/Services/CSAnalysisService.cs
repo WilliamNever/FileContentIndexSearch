@@ -26,13 +26,10 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
 
         protected virtual Regex PickerOfCommentKeyWords1 { get => new($"((^[\\s]*)|([\\s]+))/// <summary>[\\w\\W]+?/// </summary>"); }
         protected virtual Regex PickerOfCommentKeyWords2 { get => new($"((^[\\s]*)|([\\s]+))/\\*[\\w\\W]+?\\*/"); }
-        protected virtual Regex PickerClassName { get => new($"([\\w\\s]*(class|interface|enum|struct){{1}})[ ]+[\\w]+[\\w\\W]*?({EnviConst.EnvironmentNewLine}|{EnviConst.SpecNewLine1})"); }
-        //protected virtual Regex PickerMethodsName { get => new($"({EnviConst.EnvironmentNewLine}|{EnviConst.SpecNewLine1})[\\s]+(private|public|protected|internal){{1}}[\\s]+[\\w. <>]+(\\(([\\w.<>\\?: ]+[ ]+[\\w= ]+[,]?)*\\)){{1}}[\\s\\w:]*"); }
-        protected virtual Regex PickerMethodsName { get => new($"({EnviConst.EnvironmentNewLine}|{EnviConst.SpecNewLine1})[\\s]+((private|public|protected|internal)[\\s]+)[\\w. <>?\\[\\]]+\\([\\w <>.\\?:=,\"\']*\\)([\\s]+where[\\w\\s:.<>\\[\\]]+)*"); }
-        //protected virtual Regex PickerMethodsName { get => new($"({EnviConst.EnvironmentNewLine}|{EnviConst.SpecNewLine1})[\\s]+((private|public|protected|internal)[\\s]+)?[\\w. <>?\\[\\]]+\\([\\w <>.\\?:=,\"\']*\\)([\\s]+where[\\w :.]+)*"); }
-        //protected virtual Regex PickerMethodsName { get => new($"({EnviConst.EnvironmentNewLine}|{EnviConst.SpecNewLine1})[\\s]+(private|public|protected|internal)[\\s]+[\\w. <>?]+\\([\\w <>.\\?:=,\"\']*\\)([\\s]+where[\\w :.]+)*"); }
-        protected virtual Regex PickerPropertiesName { get => new($"({EnviConst.EnvironmentNewLine}|{EnviConst.SpecNewLine1})[\\s]+(private|public|protected|internal){{1}}[\\s]+[\\w. <>?\\[\\]]+{{"); }
-        protected virtual Regex PickerCommandInUsing { get => new($"({EnviConst.EnvironmentNewLine}|{EnviConst.SpecNewLine1})[\\s\\w\\(\\)\\[\\].=<>]+[\\w<>]\\([\\w\\W]*?\\)"); }
+        protected virtual Regex PickerClassName { get => new($"([\\w\\s]*(class|interface|enum|struct){{1}})[ ]+[\\w]+[\\w\\W]*?((\r)?{EnviConst.SpecNewLine1})"); }
+        protected virtual Regex PickerMethodsName { get => new($"((\r)?{EnviConst.SpecNewLine1})[\\s]+((private|public|protected|internal)[\\s]+)[\\w. <>?\\[\\]]+\\([\\w <>.\\?:=,\"\']*\\)([\\s]+where[\\w\\s:.<>\\[\\]]+)*"); }
+        protected virtual Regex PickerPropertiesName { get => new($"((\r)?{EnviConst.SpecNewLine1})[\\s]+(private|public|protected|internal){{1}}[\\s]+[\\w. <>?\\[\\]]+{{"); }
+        protected virtual Regex PickerCommandInUsing { get => new($"((\r)?{EnviConst.SpecNewLine1})[\\s\\w\\(\\)\\[\\].=<>]+[\\w<>]\\([\\w\\W]*?\\)"); }
 
         public async Task<IEnumerable<KeyWordsModel>> AnalysisFileKeyWorks(string file, Action<string>? updateHandler, CancellationToken token = default)
         {
