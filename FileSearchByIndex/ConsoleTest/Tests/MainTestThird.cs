@@ -22,9 +22,10 @@ namespace ConsoleTest.Tests
                 index = ReturnIndex(array, vl, index + 1);
                 return index;
             };
-
-            string[] s1 = "aaabbbababaabbcccrr".ToCharArray().Select(x=>x.ToString()).ToArray();
-            string[] s2 = "abcbbaddbaabbddd".ToCharArray().Select(x => x.ToString()).ToArray();
+            string b1 = "This is the the big is world.";
+            string b2 = "abccabbddcbaabbddd";
+            string[] s1 = b1.ToCharArray().Select(x=>x.ToString()).ToArray();
+            string[] s2 = b2.ToCharArray().Select(x => x.ToString()).ToArray();
             //var ss = string.Concat(s1.Intersect(s2,new CompareClassModel()));
             var chlist1 = s1.Select(x => new KeyValuePair<int, string>(func(s1, x), x)).ToList();
 
@@ -32,12 +33,15 @@ namespace ConsoleTest.Tests
             var chlist2 = s2.Select(x => new KeyValuePair<int, string>(func(s2, x), x)).ToList();
 
             var list1 = chlist1.Intersect(chlist2, new CompareClassModel()).ToList();   //
-            var list2 = s1.Intersect(s2).ToList();   //, new CompareClassModel()
+            var list2 = s1.Intersect(s2, new CompareClassModel()).ToList();   //
 
             index = -1;
             var list3 = s1.Where(x => list2.Any(y => y == x)).Select(x => new KeyValuePair<int, string>(func(s1, x), x)).ToList();
             index = -1;
             var list4 = s2.Where(x => list2.Any(y => y == x)).Select(x => new KeyValuePair<int, string>(func(s2, x), x)).ToList();
+
+            var regGrp = new Regex(@"\b(?<word>\w{2,})([\w\s]+)(\k<word>)+\b");
+            var grps1 = regGrp.Matches(b1);
         }
 
         public static int ReturnIndex<T>(T[] array, T vl, int start)
@@ -126,7 +130,7 @@ namespace ConsoleTest.Tests
 
         int IEqualityComparer<string>.GetHashCode(string obj)
         {
-            return GetHashCode();
+            return obj.GetHashCode();
         }
 
         bool IEqualityComparer<KeyValuePair<int, string>>.Equals(KeyValuePair<int, string> x, KeyValuePair<int, string> y)
@@ -136,7 +140,7 @@ namespace ConsoleTest.Tests
 
         int IEqualityComparer<KeyValuePair<int, string>>.GetHashCode(KeyValuePair<int, string> obj)
         {
-            return GetHashCode();
+            return obj.Value.GetHashCode();
         }
     }
 }
