@@ -3,6 +3,7 @@ using FileSearchByIndex.Core.Helper;
 using FileSearchByIndex.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -13,6 +14,37 @@ namespace ConsoleTest.Tests
 {
     public class MainTestThird
     {
+        public async static Task Main3Async()
+        {
+            int index = -1;
+            Func<string[], string, int> func = (array, vl) =>
+            {
+                index = ReturnIndex(array, vl, index + 1);
+                return index;
+            };
+
+            string[] s1 = "aaabbbababaabbcccrr".ToCharArray().Select(x=>x.ToString()).ToArray();
+            string[] s2 = "abcbbaddbaabbddd".ToCharArray().Select(x => x.ToString()).ToArray();
+            //var ss = string.Concat(s1.Intersect(s2,new CompareClassModel()));
+            var chlist1 = s1.Select(x => new KeyValuePair<int, string>(func(s1, x), x)).ToList();
+
+            index = -1;
+            var chlist2 = s2.Select(x => new KeyValuePair<int, string>(func(s2, x), x)).ToList();
+
+            var list1 = chlist1.Intersect(chlist2, new CompareClassModel()).ToList();   //
+            var list2 = s1.Intersect(s2).ToList();   //, new CompareClassModel()
+
+            index = -1;
+            var list3 = s1.Where(x => list2.Any(y => y == x)).Select(x => new KeyValuePair<int, string>(func(s1, x), x)).ToList();
+            index = -1;
+            var list4 = s2.Where(x => list2.Any(y => y == x)).Select(x => new KeyValuePair<int, string>(func(s2, x), x)).ToList();
+        }
+
+        public static int ReturnIndex<T>(T[] array, T vl, int start)
+        {
+            return Array.IndexOf(array, vl, start);
+        }
+
         public async static Task Main2Async()
         {
             var ss = "工，工a,a bb";
@@ -60,6 +92,51 @@ namespace ConsoleTest.Tests
             {
                 str += mtch.Result(mtch.Value + "/");
             }
+        }
+    }
+
+    public class CompareClassModel : 
+        IEqualityComparer<char>, IEqualityComparer<KeyValuePair<int, char>>, 
+        IEqualityComparer<string>, IEqualityComparer<KeyValuePair<int, string>>
+    {
+        bool IEqualityComparer<char>.Equals(char x, char y)
+        {
+            return x == y;
+        }
+
+        int IEqualityComparer<char>.GetHashCode([DisallowNull] char obj)
+        {
+            return GetHashCode();
+        }
+
+        bool IEqualityComparer<KeyValuePair<int, char>>.Equals(KeyValuePair<int, char> x, KeyValuePair<int, char> y)
+        {
+            return x.Value == y.Value;
+        }
+
+        int IEqualityComparer<KeyValuePair<int, char>>.GetHashCode(KeyValuePair<int, char> obj)
+        {
+            return GetHashCode();
+        }
+
+        bool IEqualityComparer<string>.Equals(string? x, string? y)
+        {
+            return x == y;
+        }
+
+        int IEqualityComparer<string>.GetHashCode(string obj)
+        {
+            return GetHashCode();
+        }
+
+        bool IEqualityComparer<KeyValuePair<int, string>>.Equals(KeyValuePair<int, string> x, KeyValuePair<int, string> y)
+        {
+            return x.Value == y.Value;
+        }
+
+        int IEqualityComparer<KeyValuePair<int, string>>.GetHashCode(KeyValuePair<int, string> obj)
+        {
+            return GetHashCode();
         }
     }
 }
