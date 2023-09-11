@@ -22,7 +22,7 @@ namespace ConsoleTest.Tests
                 index = ReturnIndex(array, vl, index + 1);
                 return index;
             };
-            string b1 = "This is the is is the big is world.";
+            string b1 = "This is the is is the on is world big is world.";
             string b2 = "abccabbddcbaabbddd";
             string[] s1 = b1.ToCharArray().Select(x=>x.ToString()).ToArray();
             string[] s2 = b2.ToCharArray().Select(x => x.ToString()).ToArray();
@@ -46,8 +46,22 @@ namespace ConsoleTest.Tests
             var regGrp2 = new Regex(@"\b(?'word'[\w ]{2,})([\w\W]*?)(\k'word')\b");
             var grps2 = regGrp2.Matches(b1);
 
-            Regex regGrp3 = new Regex(@"(\b[a-zA-Z0-9 ]{2,})[\w\W]*?\1");
+            Regex regGrp3 = new Regex(@"\b[^\s]([\w -]{5,})(?:[\w\W]*?)\1");
             var grps3 = regGrp3.Matches(b1);
+            var str = grps3[0].Value.Trim();
+            var half = str.Length / 2;
+            string rsl = "";
+
+            for (int i = half; i > 0; i--)
+            {
+                var sssx = str[0..i];
+                var ffxx = str[^i..];
+                if (str[0..i] == str[^i..])
+                {
+                    rsl = str[0..i];
+                    break;
+                }
+            }
         }
 
         public static int ReturnIndex<T>(T[] array, T vl, int start)
