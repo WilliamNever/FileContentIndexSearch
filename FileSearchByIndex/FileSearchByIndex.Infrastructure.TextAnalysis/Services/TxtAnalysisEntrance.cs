@@ -14,7 +14,8 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
         protected InboundFileConfig? Config;
         protected Func<string, IAnalysisService?> _getAnalyses;
 
-        protected virtual Regex WordSearchingRegex { get => new($"[\u4e00-\u9fa5]|([\\w]+)"); }
+        //protected virtual Regex WordSearchingRegex { get => new($"[\u4e00-\u9fa5]|([\\w]+)"); }
+        protected virtual Regex WordSearchingRegex { get => new(@"(?<word>[\u4e00-\u9fa5\d_]{2,}|\b[\w -]{5,})(.*?)(\k<word>)"); }
         public TxtAnalysisEntrance(Func<string, IAnalysisService?> getAnalyses, IOptions<List<InboundFileConfig>> configs)
         {
             _getAnalyses = getAnalyses;

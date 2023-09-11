@@ -24,6 +24,7 @@ namespace ConsoleTest.Tests
             };
             string b1 = "This is the is is the on is world big is world.";
             string b2 = "abccabbddcbaabbddd";
+            string b3 = "匹配由26个，英文字母的大写组成的配字符串由26个，英文大写组成写组成的字符串由" + b1;
             string[] s1 = b1.ToCharArray().Select(x=>x.ToString()).ToArray();
             string[] s2 = b2.ToCharArray().Select(x => x.ToString()).ToArray();
             //var ss = string.Concat(s1.Intersect(s2,new CompareClassModel()));
@@ -45,6 +46,9 @@ namespace ConsoleTest.Tests
 
             var regGrp2 = new Regex(@"\b(?'word'[\w ]{2,})([\w\W]*?)(\k'word')\b");
             var grps2 = regGrp2.Matches(b1);
+
+            var regGrp4 = new Regex(@"(?<word>[\u4e00-\u9fa5\d_]{2,}|\b[\w -]{5,})(.*?)(\k<word>)");
+            var grps4 = regGrp4.Matches(b3);
 
             Regex regGrp3 = new Regex(@"\b[^\s]([\w -]{5,})(?:[\w\W]*?)\1");
             var grps3 = regGrp3.Matches(b1);
