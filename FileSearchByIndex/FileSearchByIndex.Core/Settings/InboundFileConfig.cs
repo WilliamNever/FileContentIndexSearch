@@ -1,4 +1,4 @@
-﻿namespace FileSearchByIndex.Core.Models
+﻿namespace FileSearchByIndex.Core.Settings
 {
     public class InboundFileConfig
     {

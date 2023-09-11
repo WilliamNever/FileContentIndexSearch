@@ -19,7 +19,7 @@ namespace FileSearchByIndex.UserControls
         {
             DlgPichSearchPaths dlg = new DlgPichSearchPaths();
             dlg.Initial(Selections);
-            if (dlg.ShowDialog() == DialogResult.OK)
+            if (dlg.ShowDialog() == DialogResult.OK || dlg.HasChangeSelections)
             {
                 Selections = dlg.GetSelectedIndexes();
                 ListSearchingPath.Items.Clear();

@@ -13,10 +13,12 @@ namespace FileSearchByIndex.Infrastructure.Services
     {
         protected IFileAnalysis _fileAnaly;
         protected TaskThreadSettings _taskSettings;
-        public CreateIndexService(IOptions<TaskThreadSettings> TaskSettings, IFileAnalysis fileAnalysis)
+        protected readonly AppSettings _appSettings;
+        public CreateIndexService(IOptions<TaskThreadSettings> TaskSettings, IOptions<AppSettings> AppSettings, IFileAnalysis fileAnalysis)
         {
             _fileAnaly = fileAnalysis;
             _taskSettings = TaskSettings.Value;
+            _appSettings = AppSettings.Value;
         }
         public async Task<string> CreateIndexFileAsync(SearchModel search, Action<string>? updateHandler = null, CancellationToken token = default)
         {
@@ -58,7 +60,7 @@ namespace FileSearchByIndex.Infrastructure.Services
                                 }
                                 finally
                                 {
-                                    if (File.Exists(item)) File.Delete(item);
+                                    if (!_appSettings.RemainTmpWorkingFIles && File.Exists(item)) File.Delete(item);
                                 }
                             }
                         , token));
@@ -70,7 +72,7 @@ namespace FileSearchByIndex.Infrastructure.Services
                 {
                     if (token.IsCancellationRequested)
                     {
-                        foreach (var item in PartailIndexFiles) if (File.Exists(item)) File.Delete(item);
+                        foreach (var item in PartailIndexFiles) if (!_appSettings.RemainTmpWorkingFIles && File.Exists(item)) File.Delete(item);
                         throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
                     }
                 }

@@ -21,6 +21,7 @@ namespace FileSearchByIndex.UserControls
             txtPath.Text = @"c:\tAnsly";
             txtIndexFileName.Text = "aat";
             txtFilter.Text = "*.txt";
+            cbkIncludeSub.Checked = false;
         }
         public void SetParentIForm(IForm parent) => pform = parent;
 

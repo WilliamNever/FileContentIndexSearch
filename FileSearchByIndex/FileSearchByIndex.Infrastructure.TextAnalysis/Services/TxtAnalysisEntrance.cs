@@ -1,6 +1,7 @@
 ﻿using FileSearchByIndex.Core.Interfaces;
 using FileSearchByIndex.Core.Models;
 using FileSearchByIndex.Core.Services;
+using FileSearchByIndex.Core.Settings;
 using Microsoft.Extensions.Options;
 using System.Text.RegularExpressions;
 
