@@ -16,7 +16,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
         {
             _taskSettings = TaskSettings.Value;
             Config = configs?.Value.FirstOrDefault(x => x?.FileExtension?.Equals(FileExtension, StringComparison.OrdinalIgnoreCase) ?? false);
-            if (Config?.EncodingName != null) InitCharEncoding(Config.EncodingName);
+            InitCharEncoding(Config?.EncodingName);
         }
 
         public Guid Id { get; set; } = Guid.NewGuid();

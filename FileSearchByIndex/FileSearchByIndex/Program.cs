@@ -31,8 +31,8 @@ namespace FileSearchByIndex
                 .AddTransient<IFileAnalysis, FileAnalysis>()
                 .AddTransient<IAnalysisService, CSAnalysisService>()
                 .AddTransient<IAnalysisService, TxtAnalysisService>()
-                //.AddTransient<IAnalysisService, ENTextAnalysisService>()
-                //.AddTransient<IAnalysisService, CHTextAnalysisService>()
+                .AddTransient<IAnalysisService, ENTextAnalysisService>()
+                .AddTransient<IAnalysisService, CHTextAnalysisService>()
                 .AddTransient<ISearchingIndexFilesSerivce, SearchingIndexFilesSerivce>()
                 ;
 

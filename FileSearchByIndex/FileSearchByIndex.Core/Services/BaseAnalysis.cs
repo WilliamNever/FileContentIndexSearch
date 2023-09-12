@@ -10,12 +10,19 @@ namespace FileSearchByIndex.Core.Services
         protected Regex EmptyChars { get => new(@"[\s]+"); }
         protected Regex LineWrap { get => new($"((\r)?{EnviConst.SpecNewLine1})"); }
         protected Encoding FileEncoding { get; private set; } = Encoding.UTF8;
-        public void InitCharEncoding(string charCodeing)
+        protected void InitCharEncoding(string? charCodeing)
         {
             try
             {
-                var enc = Encoding.GetEncoding(charCodeing);
-                FileEncoding = enc;
+                if (string.IsNullOrEmpty(charCodeing) || charCodeing.Equals("default", StringComparison.OrdinalIgnoreCase))
+                {
+                    FileEncoding = Encoding.Default;
+                }
+                else
+                {
+                    var enc = Encoding.GetEncoding(charCodeing);
+                    FileEncoding = enc;
+                }
             }
             catch (Exception ex)
             {

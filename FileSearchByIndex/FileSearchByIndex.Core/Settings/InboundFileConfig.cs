@@ -6,7 +6,7 @@
         public string? EncodingName { get; set; }
         /// <summary>
         /// if CanAutoSelectAnalysisService == true, one of analysises in the ServiceExtensions will be selected to analysis the inbound file.
-        /// if CanAutoSelectAnalysisService == true, all of analysises in the ServiceExtensions will be used on the inbound file.
+        /// if CanAutoSelectAnalysisService == false, just the common analysis will be used on the inbound file.
         /// default is false
         /// </summary>
         public bool CanAutoSelectAnalysisService { get; set; } = false;
