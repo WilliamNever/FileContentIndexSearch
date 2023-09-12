@@ -70,23 +70,8 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
             var matches = PickerCommandInUsing.Matches(txt).ToList();
             try
             {
-                var keysTxtList = matches.Select(x => new SampleTxtModel { LineNumber = GetCurrentLineNumber(txt, x.Value.Trim(), x) + 1, Text = x.Value.Trim() }).ToList();
-                var mCmds = keysTxtList.SelectMany(kt => regCommandName.Matches(ClearString(kt?.Text?.Trim()??"", "\"")).Select(x => x.Value.Trim().TrimEnd('('))).Distinct().ToList();
-                #region comment out code
-                //foreach (var mc in mCmds)
-                //{
-                //    var list = keysTxtList.Where(x => x.Text.Contains(mc));
-                //    if (list.Any())
-                //    {
-                //        keyWords.Add(new KeyWordsModel
-                //        {
-                //            KeyWord = mc,
-                //            KeyWordsType = Core.Enums.EnKeyWordsType.CommandName,
-                //            SampleTxts = list.ToList()
-                //        });
-                //    }
-                //}
-                #endregion
+                var keysTxtList = matches.Select(x => new SampleTxtModel { LineNumber = GetCurrentLineNumber(txt, x.Value.Trim(), x), Text = x.Value.Trim() }).ToList();
+                var mCmds = keysTxtList.SelectMany(kt => regCommandName.Matches(ClearString(kt?.Text?.Trim() ?? "", "\"")).Select(x => x.Value.Trim().TrimEnd('('))).Distinct().ToList();
 
                 var compare = SampleTxtModel.GetComparer();
                 if (mCmds.Any())
@@ -160,7 +145,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                     {
                         break;
                     }
-                    keyWords.Add(CreateKeyword(txt, m, Core.Enums.EnKeyWordsType.MethodOrClassName));
+                    keyWords.Add(CreateKeyword(txt, m, Core.Enums.EnKeyWordsType.MethodOrClassName, '{'));
                 }
             }
             catch (Exception ex)
@@ -200,7 +185,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                     {
                         break;
                     }
-                    keyWords.Add(CreateKeyword(txt, m, Core.Enums.EnKeyWordsType.Comment));
+                    keyWords.Add(CreateKeyword(txt, m, Core.Enums.EnKeyWordsType.Comment, '{'));
                 }
             }
             catch (Exception ex)
@@ -209,21 +194,6 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
             }
 
             return keyWords;
-        }
-
-        private KeyWordsModel CreateKeyword(string txt, Match m, Core.Enums.EnKeyWordsType kvType)
-        {
-            var kv = new KeyWordsModel
-            {
-                KeyWord = EmptyChars.Replace(LineWrap.Replace(m.Value, ""), " ").Trim().TrimEnd('{'),
-                KeyWordsType = kvType,
-            };
-            kv.SampleTxts.Add(new SampleTxtModel { LineNumber = GetCurrentLineNumber(txt, m.Value.Trim(), m) + 1, Text = m.Value.Trim().TrimEnd('{') });
-            return kv;
-        }
-        private int GetCurrentLineNumber(string txt, string partTxt, Match match)
-        {
-            return LineWrap.Matches(txt[0..txt.IndexOf(partTxt?.Trim() ?? "", match.Index)]).Count;
         }
     }
 }

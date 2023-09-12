@@ -1,4 +1,5 @@
 ﻿using FileSearchByIndex.Core.Consts;
+using FileSearchByIndex.Core.Models;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -65,5 +66,24 @@ namespace FileSearchByIndex.Core.Services
             var str = regString.Replace(txt, "");
             return str;
         }
+
+        protected KeyWordsModel CreateKeyword(string ori_txt, Match m, Core.Enums.EnKeyWordsType kvType, params char[]? trimEndChars)
+        {
+            var kwd = EmptyChars.Replace(LineWrap.Replace(m.Value, ""), " ").Trim();
+            if (trimEndChars != null && trimEndChars.Any()) kwd = kwd.TrimEnd(trimEndChars);
+
+            var kv = new KeyWordsModel
+            {
+                KeyWord = kwd,
+                KeyWordsType = kvType,
+            };
+            kv.SampleTxts.Add(new SampleTxtModel { LineNumber = GetCurrentLineNumber(ori_txt, m.Value.Trim(), m), Text = m.Value.Trim().TrimEnd('{') });
+            return kv;
+        }
+        protected int GetCurrentLineNumber(string ori_txt, string partTxt, Match match)
+        {
+            return LineWrap.Matches(ori_txt[0..ori_txt.IndexOf(partTxt?.Trim() ?? "", match.Index)]).Count + 1;
+        }
+
     }
 }

@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
 {
-    public class TxtAnalysisEntrance : BaseAnalysis<TxtAnalysisEntrance>, IAnalysisService
+    public class TxtAnalysisService : BaseAnalysis<TxtAnalysisService>, IAnalysisService
     {
         public string FileExtension => ".txt";
 
@@ -16,7 +16,7 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
 
         //protected virtual Regex WordSearchingRegex { get => new($"[\u4e00-\u9fa5]|([\\w]+)"); }
         protected virtual Regex WordSearchingRegex { get => new(@"(?<word>[\u4e00-\u9fa5\d_]{2,}|\b[\w -]{5,})(.*?)(\k<word>)"); }
-        public TxtAnalysisEntrance(Func<string, IAnalysisService?> getAnalyses, IOptions<List<InboundFileConfig>> configs)
+        public TxtAnalysisService(Func<string, IAnalysisService?> getAnalyses, IOptions<List<InboundFileConfig>> configs)
         {
             _getAnalyses = getAnalyses;
             Config = configs?.Value.FirstOrDefault(x => x?.FileExtension?.Equals(FileExtension, StringComparison.OrdinalIgnoreCase) ?? false);
