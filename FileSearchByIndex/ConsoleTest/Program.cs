@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 Console.WriteLine("Hello, World!");
 
 {
-    await MainTestThird.Main3Async();
+    await MainTestThird.Main4Async();
 
     var ii = 0;
     Console.WriteLine("......");

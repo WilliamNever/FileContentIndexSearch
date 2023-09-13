@@ -14,6 +14,11 @@ namespace ConsoleTest.Tests
 {
     public class MainTestThird
     {
+        public static async Task Main4Async()
+        {
+            var dic = new Dictionary<int, int>();
+            //dic.Min(x => x.Key);
+        }
         public async static Task Main3Async()
         {
             int index = -1;

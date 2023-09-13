@@ -10,19 +10,15 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
     public class TxtAnalysisService : TxtAnalysisBase<TxtAnalysisService>, IAnalysisService
     {
         public string FileExtension => ".txt";
-
-        protected InboundFileConfig? Config;
         protected Func<string, IAnalysisService?> _getAnalyses;
-        protected TaskThreadSettings _taskSettings;
-
         protected override Regex WordSearchingRegex => new(@"(?<word>\b[\u4e00-\u9fa5\d_]{2,}|\b[\w -]{5,})(.*?)(\k<word>)");
-        //protected override Regex WordSearchingRegex => new(@"(?<word>\b[\u4e00-\u9fa5\d_]{2,})(.*?)(\k<word>)");
-        //protected override Regex WordSearchingRegex => new(@"(?<word>\b[\w -]{5,})(.*?)(\k<word>)");
         public TxtAnalysisService(Func<string, IAnalysisService?> getAnalyses, IOptions<TaskThreadSettings> TaskSettings, IOptions<List<InboundFileConfig>> configs)
         {
             _getAnalyses = getAnalyses;
             _taskSettings = TaskSettings.Value;
             Config = configs?.Value.FirstOrDefault(x => x?.FileExtension?.Equals(FileExtension, StringComparison.OrdinalIgnoreCase) ?? false);
+            _repeatKeywordsConfig = Config?.GetRepeatKeywordsConfig() ?? new Dictionary<int, int>();
+            _minWordLength = _repeatKeywordsConfig.Count > 0 ? _repeatKeywordsConfig.Min(x => x.Key) : 0;
             InitCharEncoding(Config?.EncodingName);
         }
 
@@ -51,7 +47,14 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
             {
                 var txt = await ReadFileAsync(file);
                 var matches = WordSearchingRegex.Matches(txt).OfType<Match>().ToList();
-                var matches1 = WordSearchingRegex.Matches(txt, matches[10].Index + 1).OfType<Match>().ToList();
+                var theMaxMatch = matches.OrderByDescending(x => x.Value.Length).FirstOrDefault();
+
+                List<Match> researchs = new List<Match>();
+                var paragraphs = Paragraph.Split(txt);
+                foreach (var para in paragraphs)
+                {
+                    researchs.AddRange(WordSearchingRegex.Matches(LineWrap.Replace(para ?? "", " ")).OfType<Match>());
+                }
             }
             catch (Exception)
             {
