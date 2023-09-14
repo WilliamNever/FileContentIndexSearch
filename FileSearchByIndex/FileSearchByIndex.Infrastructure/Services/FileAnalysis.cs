@@ -33,10 +33,17 @@ namespace FileSearchByIndex.Infrastructure.Services
             var analysis = _getAnalyses(Path.GetExtension(file));
             if (analysis != null)
             {
-                IEnumerable<KeyWordsModel> keyWords = await analysis.AnalysisFileKeyWorks(file, updateHandler, token);
-                if (keyWords != null)
+                var keyWords = (await analysis.AnalysisFileKeyWorks(file, updateHandler, token)).ToList();
+                if (keyWords != null && keyWords.Any())
                 {
+                    keyWords.ForEach(x => x.LineNumbers = x.SampleTxts.Select(y => y.LineNumber).ToList());
                     sfi.KeyWords.AddRange(keyWords);
+                    var smpls = keyWords.SelectMany(x => x.SampleTxts);
+                    var grps = smpls.GroupBy(x => x.LineNumber).OrderBy(x=>x.Key);
+                    foreach (var grp in grps)
+                    {
+                        sfi.SampleTxts.Add(grp.OrderByDescending(x => x.Length).First());
+                    }
                 }
             }
             else
@@ -94,11 +101,11 @@ namespace FileSearchByIndex.Infrastructure.Services
                             }
                         , token));
             }
-            catch(OperationCanceledException ex)
+            catch (OperationCanceledException ex)
             {
                 _log.Error($"Batch Id - {BatchID} was Canceled - ", ex);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _log.Error($"Batch Id - {BatchID} was broken - ", ex);
             }

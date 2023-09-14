@@ -12,6 +12,7 @@ namespace FileSearchByIndex.Core.Models
         public string FileExtension { get { return Path.GetExtension(FileFullName); } }
 
         public List<KeyWordsModel> KeyWords { get; set; } = new List<KeyWordsModel>();
+        public List<SampleTxtModel> SampleTxts { get; set; } = new List<SampleTxtModel>();
 
         public List<KeyWordsModel> GetKeyWordsByType(EnKeyWordsType enKeyWordsType) => KeyWords.Where(x => x.KeyWordsType == enKeyWordsType).ToList();
     }
