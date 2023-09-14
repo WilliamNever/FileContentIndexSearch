@@ -14,6 +14,7 @@
         /// the analysises list can be used on the inbound file.
         /// </summary>
         public string[]? ServiceExtensions { get; set; }
+        public int? SmallCharacterNumberInString { get; set; }
         public List<AppValuesSetting> RepeatTimesAsKeywords { get; set; } = null!;
 
         public Dictionary<int, int>? GetRepeatKeywordsConfig()

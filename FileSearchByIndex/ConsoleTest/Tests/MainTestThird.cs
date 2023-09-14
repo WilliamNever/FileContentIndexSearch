@@ -16,8 +16,14 @@ namespace ConsoleTest.Tests
     {
         public static async Task Main4Async()
         {
-            var dic = new Dictionary<int, int>();
-            //dic.Min(x => x.Key);
+            var txt = @"穿越之韬光养，,：；’‘’“”《》？、。晦完结——！";
+
+            //Regex reg = new(@"(?<word>\b([\\p{Han}\d_-]){2,}|\b[\w -]{5,})(.*?)(\k<word>)");
+            //Regex reg = new(@"[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\u20000-\u3134a]");
+            //Regex reg = new(@"[\uff00-\uffee]");
+            //Regex reg = new(@"[\uf900-\ufaff]");
+            Regex reg = new(@"[\u4e00-\u9fff\uff00-\uffee\u20000-\u3134a]");
+            var ms = reg.Matches(txt, 2);
         }
         public async static Task Main3Async()
         {

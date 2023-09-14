@@ -1,6 +1,5 @@
 ﻿using FileSearchByIndex.Core.Interfaces;
 using FileSearchByIndex.Core.Models;
-using FileSearchByIndex.Core.Services;
 using FileSearchByIndex.Core.Settings;
 using Microsoft.Extensions.Options;
 using System.Text.RegularExpressions;
@@ -11,12 +10,15 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
     {
         public string FileExtension => ".txt";
         protected Func<string, IAnalysisService?> _getAnalyses;
-        protected override Regex WordSearchingRegex => new(@"(?<word>\b[\u4e00-\u9fa5\d_]{2,}|\b[\w -]{5,})(.*?)(\k<word>)");
+        //protected override Regex WordSearchingRegex => new(@"(?<word>\b[\u4e00-\u9fa5\d_]{2,}|\b[\w -]{5,})(.*?)(\k<word>)");
+        //protected override Regex WordSearchingRegex => new(@"(?<word>\b[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\u20000-\u3134a\d_-]{2,}|\b[\w -]{5,})(.*?)(\k<word>)");
+        //protected override Regex WordSearchingRegex => new(@"(?<word>\b[\u4e00-\u9fff\uff00-\uffee\u20000-\u3134a\d_-]{2,}|\b[\w -]{5,})(.*?)(\k<word>)");
+        protected override Regex WordSearchingRegex => new(@"(?<word>\b[\u4e00-\u9fff]{2,}|\b([\w-]+[\s]+){2,})(.*?)(\k<word>)");
         public TxtAnalysisService(Func<string, IAnalysisService?> getAnalyses, IOptions<TaskThreadSettings> TaskSettings, IOptions<List<InboundFileConfig>> configs)
         {
             _getAnalyses = getAnalyses;
             _taskSettings = TaskSettings.Value;
-            Config = configs?.Value.FirstOrDefault(x => x?.FileExtension?.Equals(FileExtension, StringComparison.OrdinalIgnoreCase) ?? false);
+            Config = configs.Value.FirstOrDefault(x => x?.FileExtension?.Equals(FileExtension, StringComparison.OrdinalIgnoreCase) ?? false);
             _repeatKeywordsConfig = Config?.GetRepeatKeywordsConfig() ?? new Dictionary<int, int>();
             _minWordLength = _repeatKeywordsConfig.Count > 0 ? _repeatKeywordsConfig.Min(x => x.Key) : 0;
             InitCharEncoding(Config?.EncodingName);
@@ -47,14 +49,18 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
             {
                 var txt = await ReadFileAsync(file);
                 var matches = WordSearchingRegex.Matches(txt).OfType<Match>().ToList();
-                var theMaxMatch = matches.OrderByDescending(x => x.Value.Length).FirstOrDefault();
-
-                List<Match> researchs = new List<Match>();
-                var paragraphs = Paragraph.Split(txt);
-                foreach (var para in paragraphs)
+                var srchMatches = matches.Where(m => m.Length > (Config?.SmallCharacterNumberInString ?? 50));
+                while (srchMatches.Any())
                 {
-                    researchs.AddRange(WordSearchingRegex.Matches(LineWrap.Replace(para ?? "", " ")).OfType<Match>());
+                    var tmpMatches = new List<Match>();
+                    foreach (var match in srchMatches) {
+                        tmpMatches.AddRange(WordSearchingRegex.Matches(LineWrap.Replace(match.Value ?? "", " "), match.Groups["word"].Length).OfType<Match>());
+                    }
+                    matches.AddRange(tmpMatches);
+                    srchMatches = tmpMatches.Where(m => m.Length > (Config?.SmallCharacterNumberInString ?? 50));
                 }
+
+                var keywords = matches.Select(x => x.Groups["word"].Value).Distinct().ToList();
             }
             catch (Exception)
             {

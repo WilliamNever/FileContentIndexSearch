@@ -1,21 +1,15 @@
 ﻿using FileSearchByIndex.Core.Interfaces;
 using FileSearchByIndex.Core.Models;
-using FileSearchByIndex.Core.Services;
 using FileSearchByIndex.Core.Settings;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
 {
     public class ENTextAnalysisService : TxtAnalysisBase<ENTextAnalysisService>, IAnalysisService
     {
         public string FileExtension => ".txt.en";
-        protected override Regex WordSearchingRegex => new(@"(?<word>\b[\w -]{5,})(.*?)(\k<word>)");
+        protected override Regex WordSearchingRegex => new(@"(?<word>\b([\w-]+[\s]+){2,})(.*?)(\k<word>)");
         public ENTextAnalysisService(IOptions<TaskThreadSettings> TaskSettings, IOptions<List<InboundFileConfig>> configs)
         {
             _taskSettings = TaskSettings.Value;
