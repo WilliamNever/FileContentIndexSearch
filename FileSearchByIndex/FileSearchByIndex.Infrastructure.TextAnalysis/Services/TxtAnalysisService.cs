@@ -62,11 +62,12 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
                                     {
                                         return;
                                     }
-                                    KeyWordsModel kwordModel = await CreateKeywordModelAsync(txt, item);
-                                    lock (keyWords)
-                                    {
-                                        keyWords.Add(kwordModel);
-                                    }
+                                    var kwordModel = await CreateKeywordModelAsync(txt, item);
+                                    if (kwordModel != null)
+                                        lock (keyWords)
+                                        {
+                                            keyWords.Add(kwordModel);
+                                        }
                                 }
                                 catch (Exception ex)
                                 {
@@ -87,11 +88,22 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
             return keyWords;
         }
 
-        private async Task<KeyWordsModel> CreateKeywordModelAsync(string txt, string item)
+        private async Task<KeyWordsModel?> CreateKeywordModelAsync(string txt, string item)
         {
             KeyWordsModel rsl = new() { KeyWord = item, KeyWordsType = Core.Enums.EnKeyWordsType.FlatText };
             Regex regex = new Regex($"((\\r)?{EnviConst.SpecNewLine1})(.+({item})+.+)+?\\1");
             var matches = regex.Matches(txt);
+
+            if ((item?.Length ?? -1) < _minWordLength)
+            {
+                return null;
+            }
+            else
+            {
+                if (_repeatKeywordsConfig.TryGetValue(item!.Length, out int requiredShows) && matches.Count < requiredShows)
+                    return null;
+            }
+
             foreach (var match in matches.OfType<Match>())
             {
                 rsl.SampleTxts.Add(new SampleTxtModel
@@ -101,7 +113,7 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
                 });
             }
             rsl.SampleTxts = rsl.SampleTxts.Distinct(new SampleTxtModel()).ToList();
-            return rsl;
+            return await Task.FromResult(rsl);
         }
 
         private async Task<IEnumerable<string>> PickupkeywordsAsync(string txt)
