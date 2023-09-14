@@ -40,7 +40,8 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
             {
                 keyWords.AddRange(await AnalysisInCommonAsync(file, updateHandler, token));
             }
-            return keyWords;
+            keyWords.ForEach(x => x.LineNumbers = x.SampleTxts.Select(y => y.LineNumber).ToList());
+            return keyWords.OrderBy(x => x.Frequency);
         }
 
         private async Task<IEnumerable<KeyWordsModel>> AnalysisInCommonAsync(string file, Action<string>? updateHandler, CancellationToken token)

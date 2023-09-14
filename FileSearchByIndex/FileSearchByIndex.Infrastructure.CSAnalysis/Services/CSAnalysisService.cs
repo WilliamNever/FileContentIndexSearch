@@ -43,14 +43,19 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                     GetCommandKeyWordsAsync(file, txt, updateHandler, token));
 
                 foreach (var keyWord in rsl)
-                    if (keyWord != null) keyWords.AddRange(keyWord);
+                    if (keyWord != null)
+                    {
+                        var list = keyWord.ToList();
+                        list.ForEach(x => x.LineNumbers = x.SampleTxts.Select(y => y.LineNumber).ToList());
+                        keyWords.AddRange(list);
+                    }
 
             }
             catch (Exception)
             {
                 throw;
             }
-            return keyWords;
+            return keyWords.OrderBy(x=>x.Frequency);
         }
         /// <summary>
         /// pick up the keywords in commands

@@ -36,7 +36,6 @@ namespace FileSearchByIndex.Infrastructure.Services
                 var keyWords = (await analysis.AnalysisFileKeyWorks(file, updateHandler, token)).ToList();
                 if (keyWords != null && keyWords.Any())
                 {
-                    keyWords.ForEach(x => x.LineNumbers = x.SampleTxts.Select(y => y.LineNumber).ToList());
                     sfi.KeyWords.AddRange(keyWords);
                     var smpls = keyWords.SelectMany(x => x.SampleTxts);
                     var grps = smpls.GroupBy(x => x.LineNumber).OrderBy(x=>x.Key);
