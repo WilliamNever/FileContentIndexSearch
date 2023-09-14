@@ -61,7 +61,7 @@ namespace FileSearchByIndex.Infrastructure.Services
 
         public async Task<IEnumerable<string>> CreateFileIndexListAsync(List<string> files, Action<string>? updateHandler, CancellationToken token = default)
         {
-            BatchID = Guid.NewGuid().ToString().Replace("-", "");
+            BatchID = Guid.NewGuid().ToString().ToMD5();
             List<string> list = new List<string>();
             try
             {
