@@ -37,7 +37,7 @@ namespace FileSearchByIndex.Infrastructure.Services
                     PartailIndexFiles.AddRange(await _fileAnaly.CreateFileIndexListAsync(files, updateHandler, token));
 
                     await Parallel.ForEachAsync(PartailIndexFiles, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount },
-                        async (item, cancellationToken) =>
+                        async (item, token) =>
                             await Task.Run( () =>
                             {
                                 try

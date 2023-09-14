@@ -1,4 +1,5 @@
-﻿using FileSearchByIndex.Core.Interfaces;
+﻿using FileSearchByIndex.Core.Consts;
+using FileSearchByIndex.Core.Interfaces;
 using FileSearchByIndex.Core.Models;
 using FileSearchByIndex.Core.Settings;
 using Microsoft.Extensions.Options;
@@ -48,25 +49,78 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
             try
             {
                 var txt = await ReadFileAsync(file);
-                var matches = WordSearchingRegex.Matches(txt).OfType<Match>().ToList();
-                var srchMatches = matches.Where(m => m.Length > (Config?.SmallCharacterNumberInString ?? 50));
-                while (srchMatches.Any())
-                {
-                    var tmpMatches = new List<Match>();
-                    foreach (var match in srchMatches) {
-                        tmpMatches.AddRange(WordSearchingRegex.Matches(LineWrap.Replace(match.Value ?? "", " "), match.Groups["word"].Length).OfType<Match>());
-                    }
-                    matches.AddRange(tmpMatches);
-                    srchMatches = tmpMatches.Where(m => m.Length > (Config?.SmallCharacterNumberInString ?? 50));
-                }
+                var strKWs = await PickupkeywordsAsync(txt);
 
-                var keywords = matches.Select(x => x.Groups["word"].Value).Distinct().ToList();
+                if (strKWs != null && strKWs.Any())
+                    await Parallel.ForEachAsync(strKWs, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount },
+                        async (item, token) =>
+                            await Task.Run(async () =>
+                            {
+                                try
+                                {
+                                    if (token.IsCancellationRequested)
+                                    {
+                                        return;
+                                    }
+                                    KeyWordsModel kwordModel = await CreateKeywordModelAsync(txt, item);
+                                    lock (keyWords)
+                                    {
+                                        keyWords.Add(kwordModel);
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    _log.Error($"{item} broke - {EnviConst.EnvironmentNewLine}", ex);
+                                    updateHandler?.Invoke($"{item} broke - {ex.Message} - {EnviConst.EnvironmentNewLine}");
+                                }
+                                finally
+                                {
+                                }
+                            }
+                        , token));
+
             }
             catch (Exception)
             {
                 throw;
             }
             return keyWords;
+        }
+
+        private async Task<KeyWordsModel> CreateKeywordModelAsync(string txt, string item)
+        {
+            KeyWordsModel rsl = new() { KeyWord = item, KeyWordsType = Core.Enums.EnKeyWordsType.FlatText };
+            Regex regex = new Regex($"((\\r)?{EnviConst.SpecNewLine1})(.+({item})+.+)+?\\1");
+            var matches = regex.Matches(txt);
+            foreach (var match in matches.OfType<Match>())
+            {
+                rsl.SampleTxts.Add(new SampleTxtModel
+                {
+                    LineNumber = GetCurrentLineNumber(txt, match.Value.Trim(), match),
+                    Text = match.Value.Trim()
+                });
+            }
+            rsl.SampleTxts = rsl.SampleTxts.Distinct(new SampleTxtModel()).ToList();
+            return rsl;
+        }
+
+        private async Task<IEnumerable<string>> PickupkeywordsAsync(string txt)
+        {
+            var matches = WordSearchingRegex.Matches(txt).OfType<Match>().ToList();
+            var srchMatches = matches.Where(m => m.Length > (Config?.SmallCharacterNumberInString ?? 50));
+
+            List<Match> tmpMatches;
+            while (srchMatches.Any())
+            {
+                tmpMatches = new List<Match>();
+                foreach (var match in srchMatches)
+                    tmpMatches.AddRange(WordSearchingRegex.Matches(LineWrap.Replace(match.Value ?? "", " "), match.Groups["word"].Length).OfType<Match>());
+
+                matches.AddRange(tmpMatches);
+                srchMatches = tmpMatches.Where(m => m.Length > (Config?.SmallCharacterNumberInString ?? 50));
+            }
+
+            return await Task.FromResult(matches.Select(x => x.Groups["word"].Value.Trim()).Distinct());
         }
     }
 }

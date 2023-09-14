@@ -8,8 +8,8 @@ namespace FileSearchByIndex.Core.Services
     public class BaseAnalysis<T> : BaseService<T> where T : class
     {
         protected Regex EmptyChars { get => new(@"[\s]+"); }
-        protected Regex LineWrap { get => new($"((\r)?{EnviConst.SpecNewLine1})"); }
-        protected Regex Paragraph { get => new($"((\r)?{EnviConst.SpecNewLine1}){{2,}}"); }
+        protected Regex LineWrap { get => new($"((\\r)?{EnviConst.SpecNewLine1})"); }
+        protected Regex Paragraph { get => new($"((\\r)?{EnviConst.SpecNewLine1}){{2,}}"); }
         protected Encoding FileEncoding { get; private set; } = Encoding.UTF8;
         protected void InitCharEncoding(string? charCodeing)
         {
