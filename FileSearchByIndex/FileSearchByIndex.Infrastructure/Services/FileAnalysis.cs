@@ -25,7 +25,7 @@ namespace FileSearchByIndex.Infrastructure.Services
         private async Task<string[]> CreateSingleFileIndexAsync(string batchid, string file, Action<string>? updateHandler, CancellationToken token = default)
         {
             //var dtN = DateTime.Now;
-            SingleFileIndexModel sfi = new SingleFileIndexModel { FileFullName = file };
+            SingleFileIndexModel sfi = new SingleFileIndexModel { FileFullName = file, FileVersion = $"{batchid}_{file.ToMD5()}" };
             string tmpFileName = $"{batchid}_{file.ToMD5()}.json";
 
             if (token.IsCancellationRequested)
@@ -67,17 +67,6 @@ namespace FileSearchByIndex.Infrastructure.Services
                 filenames.Add($"{fp}{_appSettings.SuffixForFullWidthChrFile}");
             }
             return filenames.ToArray();
-        }
-        private string WriteSingleAnalysisFile(string BaseFolder, string fileName, object sfi)
-        {
-            if (!Directory.Exists(BaseFolder)) Directory.CreateDirectory(BaseFolder);
-            string fullFileName = Path.Combine(BaseFolder, fileName);
-            using (StreamWriter sw = new StreamWriter(fullFileName, false, System.Text.Encoding.UTF8))
-            {
-                sw.Write(ConversionsHelper.SerializeToFormattedJson(sfi));
-                sw.Flush();
-            }
-            return fullFileName;
         }
 
         public async Task<IEnumerable<string>> CreateFileIndexListAsync(List<string> files, Action<string>? updateHandler, CancellationToken token = default)
