@@ -6,7 +6,8 @@ namespace FileSearchByIndex.Core.Models
     {
         public int LineNumber { get; set; }
         public string? Text { get; set; }
-
+        [System.Text.Json.Serialization.JsonIgnore]
+        public int Length { get => (Text ?? "").Length; }
         public bool Equals(SampleTxtModel? x, SampleTxtModel? y)
         {
             return x?.LineNumber == y?.LineNumber;

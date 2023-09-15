@@ -40,7 +40,8 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
             {
                 keyWords.AddRange(await AnalysisInCommonAsync(file, updateHandler, token));
             }
-            return keyWords;
+            keyWords.ForEach(x => x.LineNumbers = x.SampleTxts.Select(y => y.LineNumber).ToList());
+            return keyWords.OrderBy(x => x.Frequency);
         }
 
         private async Task<IEnumerable<KeyWordsModel>> AnalysisInCommonAsync(string file, Action<string>? updateHandler, CancellationToken token)
@@ -62,11 +63,12 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
                                     {
                                         return;
                                     }
-                                    KeyWordsModel kwordModel = await CreateKeywordModelAsync(txt, item);
-                                    lock (keyWords)
-                                    {
-                                        keyWords.Add(kwordModel);
-                                    }
+                                    var kwordModel = await CreateKeywordModelAsync(txt, item, token);
+                                    if (kwordModel != null)
+                                        lock (keyWords)
+                                        {
+                                            keyWords.Add(kwordModel);
+                                        }
                                 }
                                 catch (Exception ex)
                                 {
@@ -87,21 +89,45 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
             return keyWords;
         }
 
-        private async Task<KeyWordsModel> CreateKeywordModelAsync(string txt, string item)
+        private async Task<KeyWordsModel?> CreateKeywordModelAsync(string txt, string item, CancellationToken token)
         {
             KeyWordsModel rsl = new() { KeyWord = item, KeyWordsType = Core.Enums.EnKeyWordsType.FlatText };
             Regex regex = new Regex($"((\\r)?{EnviConst.SpecNewLine1})(.+({item})+.+)+?\\1");
             var matches = regex.Matches(txt);
-            foreach (var match in matches.OfType<Match>())
+
+            if ((item?.Length ?? -1) < _minWordLength)
             {
-                rsl.SampleTxts.Add(new SampleTxtModel
-                {
-                    LineNumber = GetCurrentLineNumber(txt, match.Value.Trim(), match),
-                    Text = match.Value.Trim()
-                });
+                return null;
             }
+            else
+            {
+                if (_repeatKeywordsConfig.TryGetValue(item!.Length, out int requiredShows) && matches.Count < requiredShows)
+                    return null;
+            }
+
+            #region
+            //foreach (var match in matches.OfType<Match>())
+            //{
+            //    rsl.SampleTxts.Add(new SampleTxtModel
+            //    {
+            //        LineNumber = GetCurrentLineNumber(txt, match.Value.Trim(), match),
+            //        Text = match.Value.Trim()
+            //    });
+            //}
+            #endregion
+
+            List<SampleTxtModel?> rtvs = await RunParallelForEach(matches.OfType<Match>(),
+                async match => {
+                    return await Task.FromResult(new SampleTxtModel
+                    {
+                        LineNumber = GetCurrentLineNumber(txt, match.Value.Trim(), match),
+                        Text = match.Value.Trim()
+                    });
+                }
+                , _taskSettings.TaskInitCount, token);
+            rsl.SampleTxts.AddRange(rtvs.Where(x => x != null)!);
             rsl.SampleTxts = rsl.SampleTxts.Distinct(new SampleTxtModel()).ToList();
-            return rsl;
+            return await Task.FromResult(rsl);
         }
 
         private async Task<IEnumerable<string>> PickupkeywordsAsync(string txt)
