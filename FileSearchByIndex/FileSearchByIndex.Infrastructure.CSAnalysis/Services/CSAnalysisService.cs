@@ -80,7 +80,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
 
                 var compare = SampleTxtModel.GetComparer();
                 if (mCmds.Any())
-                    await Parallel.ForEachAsync(mCmds, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount },
+                    await Parallel.ForEachAsync(mCmds, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount, CancellationToken = token },
                         async (item, token) =>
                             await Task.Run(() =>
                             {

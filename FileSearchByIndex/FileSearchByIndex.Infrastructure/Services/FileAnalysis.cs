@@ -76,7 +76,7 @@ namespace FileSearchByIndex.Infrastructure.Services
             try
             {
                 if (files != null && files.Any())
-                    await Parallel.ForEachAsync(files, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount },
+                    await Parallel.ForEachAsync(files, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount, CancellationToken = token },
                         async (item, token) =>
                             await Task.Run(async () =>
                             {

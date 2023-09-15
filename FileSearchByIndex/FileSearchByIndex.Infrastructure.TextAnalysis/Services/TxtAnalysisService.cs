@@ -53,7 +53,7 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
                 var strKWs = await PickupkeywordsAsync(txt);
 
                 if (strKWs != null && strKWs.Any())
-                    await Parallel.ForEachAsync(strKWs, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount },
+                    await Parallel.ForEachAsync(strKWs, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount, CancellationToken = token },
                         async (item, token) =>
                             await Task.Run(async () =>
                             {
@@ -117,7 +117,8 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
             #endregion
 
             List<SampleTxtModel?> rtvs = await RunParallelForEach(matches.OfType<Match>(),
-                async match => {
+                async match =>
+                {
                     return await Task.FromResult(new SampleTxtModel
                     {
                         LineNumber = GetCurrentLineNumber(txt, match.Value.Trim(), match),

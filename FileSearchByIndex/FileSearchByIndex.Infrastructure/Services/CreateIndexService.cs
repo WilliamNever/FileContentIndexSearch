@@ -5,7 +5,6 @@ using FileSearchByIndex.Core.Models;
 using FileSearchByIndex.Core.Services;
 using FileSearchByIndex.Core.Settings;
 using Microsoft.Extensions.Options;
-using System.Collections.Generic;
 using System.Text.Json;
 
 namespace FileSearchByIndex.Infrastructure.Services
@@ -37,7 +36,8 @@ namespace FileSearchByIndex.Infrastructure.Services
                 {
                     PartailIndexFiles.AddRange(await _fileAnaly.CreateFileIndexListAsync(files, updateHandler, token));
 
-                    await Parallel.ForEachAsync(PartailIndexFiles.Where(x => !x.EndsWith(_appSettings.SuffixForFullWidthChrFile)), new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount },
+                    await Parallel.ForEachAsync(PartailIndexFiles.Where(x => !x.EndsWith(_appSettings.SuffixForFullWidthChrFile))
+                        , new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount, CancellationToken = token },
                         async (item, token) =>
                             await Task.Run(() =>
                             {
@@ -82,11 +82,12 @@ namespace FileSearchByIndex.Infrastructure.Services
 
             if (_appSettings.IsAppendFullWidthCharacters)
             {
-                await CreateJsonFileAsync(search.IndexFileFullName, EnviConst.IndexesFolderPath, indexForPath, _appSettings.SuffixForFullWidthChrFile, new JsonSerializerOptions
-                {
-                    WriteIndented = true,
-                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-                });
+                await CreateJsonFileAsync(search.IndexFileFullName, EnviConst.IndexesFolderPath, indexForPath, _appSettings.SuffixForFullWidthChrFile
+                    , new JsonSerializerOptions
+                    {
+                        WriteIndented = true,
+                        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                    });
             }
 
             updateHandler?.Invoke($"{search.IndexFileFullName} is created - ");
