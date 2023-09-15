@@ -14,6 +14,13 @@ namespace ConsoleTest.Tests
 {
     public class MainTestThird
     {
+        public static async Task Main5Async()
+        {
+            string fp = @"D:\WQPersonal\GitsProjects\FileContentIndexSearch\FileSearchByIndex\FileSearchByIndex\bin\Debug\net6.0-windows\Indexes\aat.json";
+            string fullPath = Path.GetDirectoryName(fp);
+            var txt1 = await ReadFileAsync(fp);
+            var obj1 = ConversionsHelper.DeserializeJson<IndexFilesModel>(txt1);
+        }
         public static async Task Main4Async()
         {
             var txt = @"穿越之韬光养，,：；’‘’“”《》？、。晦完结——！";

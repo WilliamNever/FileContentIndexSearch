@@ -5,6 +5,7 @@ using FileSearchByIndex.Core.Models;
 using FileSearchByIndex.Core.Services;
 using FileSearchByIndex.Core.Settings;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace FileSearchByIndex.Infrastructure.Services
 {
@@ -13,13 +14,15 @@ namespace FileSearchByIndex.Infrastructure.Services
         protected Func<string, IAnalysisService?> _getAnalyses = null!;
         protected TaskThreadSettings _taskSettings = null!;
         public string BatchID { get; protected set; } = null!;
-        public FileAnalysis(IOptions<TaskThreadSettings> TaskSettings, Func<string, IAnalysisService?> getAnalyses)
+        protected readonly AppSettings _appSettings;
+        public FileAnalysis(IOptions<TaskThreadSettings> TaskSettings, IOptions<AppSettings> AppSettings, Func<string, IAnalysisService?> getAnalyses)
         {
             _getAnalyses = getAnalyses;
             _taskSettings = TaskSettings.Value;
+            _appSettings = AppSettings.Value;
         }
 
-        private async Task<string> CreateSingleFileIndexAsync(string batchid, string file, Action<string>? updateHandler, CancellationToken token = default)
+        private async Task<string[]> CreateSingleFileIndexAsync(string batchid, string file, Action<string>? updateHandler, CancellationToken token = default)
         {
             //var dtN = DateTime.Now;
             SingleFileIndexModel sfi = new SingleFileIndexModel { FileFullName = file };
@@ -51,7 +54,19 @@ namespace FileSearchByIndex.Infrastructure.Services
             }
             //var dtFN = DateTime.Now;
             //_log.Info($"Batch id - {batchid}, File - {file}, Begin - {dtN}, Finished - {dtFN}, Cost {(dtFN-dtN).TotalMinutes} Minutes.");
-            return WriteSingleAnalysisFile(EnviConst.TmpWorkingFolderPath, tmpFileName, sfi);
+            var fp = Path.Combine(EnviConst.TmpWorkingFolderPath, tmpFileName);
+            List<string> filenames = new List<string> { fp };
+            await CreateJsonFileAsync(fp, EnviConst.TmpWorkingFolderPath, sfi);
+            if (_appSettings.IsAppendFullWidthCharacters)
+            {
+                await CreateJsonFileAsync(fp, EnviConst.TmpWorkingFolderPath, sfi, _appSettings.SuffixForFullWidthChrFile, new JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                });
+                filenames.Add($"{fp}{_appSettings.SuffixForFullWidthChrFile}");
+            }
+            return filenames.ToArray();
         }
         private string WriteSingleAnalysisFile(string BaseFolder, string fileName, object sfi)
         {
@@ -86,7 +101,7 @@ namespace FileSearchByIndex.Infrastructure.Services
                                     if (singleFileIndex != null)
                                         lock (list)
                                         {
-                                            list.Add(singleFileIndex);
+                                            list.AddRange(singleFileIndex);
                                         }
                                 }
                                 catch (Exception ex)

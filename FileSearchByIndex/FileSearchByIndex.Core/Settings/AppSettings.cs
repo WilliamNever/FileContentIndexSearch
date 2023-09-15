@@ -9,5 +9,7 @@ namespace FileSearchByIndex.Core.Settings
     public class AppSettings
     {
         public bool RemainTmpWorkingFIles { get; set; }
+        public bool IsAppendFullWidthCharacters { get; set; }
+        public string SuffixForFullWidthChrFile { get; set; } = null!;
     }
 }

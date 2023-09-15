@@ -1,4 +1,6 @@
 ﻿using FileSearchByIndex.Core.Consts;
+using FileSearchByIndex.Core.Helper;
+using System.Text.Json;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace FileSearchByIndex.Core.Services
@@ -41,6 +43,20 @@ namespace FileSearchByIndex.Core.Services
                     , parallelOptions.CancellationToken));
 
             return result;
+        }
+
+        protected async Task CreateJsonFileAsync<T>(string IndexFileFullName, string baseFolder, T indexForPath, string fileSuffix = "", JsonSerializerOptions? option = null)
+        {
+            if (!Directory.Exists(baseFolder)) Directory.CreateDirectory(baseFolder!);
+            using (StreamWriter sw = new StreamWriter($"{IndexFileFullName}{fileSuffix}", false, System.Text.Encoding.UTF8))
+            {
+                sw.Write(
+                    option == null ?
+                    ConversionsHelper.SerializeToFormattedJson(indexForPath!)
+                    : ConversionsHelper.SerializeToJson(indexForPath!, option)
+                    );
+                await sw.FlushAsync();
+            }
         }
     }
 }

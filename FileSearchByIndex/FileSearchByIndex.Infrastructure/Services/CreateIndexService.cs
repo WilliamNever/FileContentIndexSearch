@@ -6,6 +6,7 @@ using FileSearchByIndex.Core.Services;
 using FileSearchByIndex.Core.Settings;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
+using System.Text.Json;
 
 namespace FileSearchByIndex.Infrastructure.Services
 {
@@ -36,9 +37,9 @@ namespace FileSearchByIndex.Infrastructure.Services
                 {
                     PartailIndexFiles.AddRange(await _fileAnaly.CreateFileIndexListAsync(files, updateHandler, token));
 
-                    await Parallel.ForEachAsync(PartailIndexFiles, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount },
+                    await Parallel.ForEachAsync(PartailIndexFiles.Where(x => !x.EndsWith(_appSettings.SuffixForFullWidthChrFile)), new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount },
                         async (item, token) =>
-                            await Task.Run( () =>
+                            await Task.Run(() =>
                             {
                                 try
                                 {
@@ -58,10 +59,6 @@ namespace FileSearchByIndex.Infrastructure.Services
                                     _log.Error($"{item} broke - {EnviConst.EnvironmentNewLine}", ex);
                                     updateHandler?.Invoke($"{item} broke - {ex.Message} - {EnviConst.EnvironmentNewLine}");
                                 }
-                                finally
-                                {
-                                    if (!_appSettings.RemainTmpWorkingFIles && File.Exists(item)) File.Delete(item);
-                                }
                             }
                         , token));
                 }
@@ -70,15 +67,27 @@ namespace FileSearchByIndex.Infrastructure.Services
                 }
                 finally
                 {
+                    foreach (var item in PartailIndexFiles)
+                    {
+                        if (!_appSettings.RemainTmpWorkingFIles && File.Exists(item)) File.Delete(item);
+                    }
                     if (token.IsCancellationRequested)
                     {
-                        foreach (var item in PartailIndexFiles) if (!_appSettings.RemainTmpWorkingFIles && File.Exists(item)) File.Delete(item);
                         throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
                     }
                 }
             }
 
-            await CreateIndexJsonFileAsync(search, indexForPath);
+            await CreateJsonFileAsync(search.IndexFileFullName, EnviConst.IndexesFolderPath, indexForPath);
+
+            if (_appSettings.IsAppendFullWidthCharacters)
+            {
+                await CreateJsonFileAsync(search.IndexFileFullName, EnviConst.IndexesFolderPath, indexForPath, _appSettings.SuffixForFullWidthChrFile, new JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                });
+            }
 
             updateHandler?.Invoke($"{search.IndexFileFullName} is created - ");
             return search.IndexFileFullName;
@@ -93,16 +102,6 @@ namespace FileSearchByIndex.Infrastructure.Services
                 }
             else
                 return null;
-        }
-
-        private async Task CreateIndexJsonFileAsync(SearchModel search, IndexFilesModel indexForPath)
-        {
-            if (!Directory.Exists(EnviConst.IndexesFolderPath)) Directory.CreateDirectory(EnviConst.IndexesFolderPath);
-            using (StreamWriter sw = new StreamWriter(search.IndexFileFullName, false, System.Text.Encoding.UTF8))
-            {
-                sw.Write(ConversionsHelper.SerializeToFormattedJson(indexForPath));
-                await sw.FlushAsync();
-            }
         }
 
         private List<string> SearchDirectories(string[] searchDir, SearchModel searcher, Action<string>? updateHandler = null, CancellationToken token = default)
