@@ -25,8 +25,9 @@ namespace FileSearchByIndex.Infrastructure.Services
         private async Task<string[]> CreateSingleFileIndexAsync(string batchid, string file, Action<string>? updateHandler, CancellationToken token = default)
         {
             //var dtN = DateTime.Now;
-            SingleFileIndexModel sfi = new SingleFileIndexModel { FileFullName = file, FileVersion = $"{batchid}_{file.ToMD5()}" };
-            string tmpFileName = $"{batchid}_{file.ToMD5()}.json";
+            string fileVersion = $"{batchid}_{file.ToMD5()}";
+            SingleFileIndexModel sfi = new SingleFileIndexModel { FileFullName = file, FileVersion = fileVersion };
+            string tmpFileName = $"{fileVersion}.json";
 
             if (token.IsCancellationRequested)
             {
