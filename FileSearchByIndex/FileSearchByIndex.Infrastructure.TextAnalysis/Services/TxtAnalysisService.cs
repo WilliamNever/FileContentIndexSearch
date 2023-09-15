@@ -63,7 +63,7 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
                                     {
                                         return;
                                     }
-                                    var kwordModel = await CreateKeywordModelAsync(txt, item);
+                                    var kwordModel = await CreateKeywordModelAsync(txt, item, token);
                                     if (kwordModel != null)
                                         lock (keyWords)
                                         {
@@ -89,7 +89,7 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
             return keyWords;
         }
 
-        private async Task<KeyWordsModel?> CreateKeywordModelAsync(string txt, string item)
+        private async Task<KeyWordsModel?> CreateKeywordModelAsync(string txt, string item, CancellationToken token)
         {
             KeyWordsModel rsl = new() { KeyWord = item, KeyWordsType = Core.Enums.EnKeyWordsType.FlatText };
             Regex regex = new Regex($"((\\r)?{EnviConst.SpecNewLine1})(.+({item})+.+)+?\\1");
@@ -105,14 +105,27 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
                     return null;
             }
 
-            foreach (var match in matches.OfType<Match>())
-            {
-                rsl.SampleTxts.Add(new SampleTxtModel
-                {
-                    LineNumber = GetCurrentLineNumber(txt, match.Value.Trim(), match),
-                    Text = match.Value.Trim()
-                });
-            }
+            #region
+            //foreach (var match in matches.OfType<Match>())
+            //{
+            //    rsl.SampleTxts.Add(new SampleTxtModel
+            //    {
+            //        LineNumber = GetCurrentLineNumber(txt, match.Value.Trim(), match),
+            //        Text = match.Value.Trim()
+            //    });
+            //}
+            #endregion
+
+            List<SampleTxtModel?> rtvs = await RunParallelForEach(matches.OfType<Match>(),
+                async match => {
+                    return await Task.FromResult(new SampleTxtModel
+                    {
+                        LineNumber = GetCurrentLineNumber(txt, match.Value.Trim(), match),
+                        Text = match.Value.Trim()
+                    });
+                }
+                , _taskSettings.TaskInitCount, token);
+            rsl.SampleTxts.AddRange(rtvs.Where(x => x != null)!);
             rsl.SampleTxts = rsl.SampleTxts.Distinct(new SampleTxtModel()).ToList();
             return await Task.FromResult(rsl);
         }
