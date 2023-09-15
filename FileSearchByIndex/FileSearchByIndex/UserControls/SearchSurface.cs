@@ -54,7 +54,7 @@ namespace FileSearchByIndex.UserControls
                 return;
             }
             pform?.CleanMessages();
-            AcceptMessage($"Beginning Searching - {Environment.NewLine}");
+            AcceptMessage($"Beginning Searching - {DateTime.Now} - {Environment.NewLine}");
             AcceptMessage(txtPath.Text, "title");
             AcceptMessage($"{ConversionsHelper.SerializeToFormattedJson(search)}{Environment.NewLine}{Environment.NewLine}");
             RunningTask = RunAsync(search);
@@ -71,7 +71,7 @@ namespace FileSearchByIndex.UserControls
             {
                 _cts = new CancellationTokenSource();
                 var IndexFileFullName = await Task.Run(async () => await icrs.CreateIndexFileAsync(search, action, _cts.Token), _cts.Token);
-                action.Invoke($"{Environment.NewLine}{Environment.NewLine} Task finished -");
+                action.Invoke($"{Environment.NewLine}{Environment.NewLine} Task finished - {DateTime.Now} -");
                 action.Invoke($"Index file was created - {IndexFileFullName} -");
             }
             catch (Exception ex)
