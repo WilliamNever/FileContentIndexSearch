@@ -55,8 +55,15 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                         }
 
                 }
-                catch (Exception)
+                catch (OperationCanceledException ex)
                 {
+                    ex.Data.Add("Source file", $"Failed to Analysis {file} for time out!");
+                    _log.Error($"Failed to Analysis for time out!", ex);
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _log.Error($"Failed to pick up command keyword from {file}", ex);
                     throw;
                 }
                 return keyWords;
@@ -80,55 +87,39 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
             Regex regCommandName = new Regex($"[\\w.<>]+[\\s]*\\(");
             List<KeyWordsModel> keyWords = new List<KeyWordsModel>();
             var matches = PickerCommandInUsing.Matches(txt).ToList();
-            try
+            var keysTxtList = matches.Select(x => new SampleTxtModel
             {
-                var keysTxtList = matches.Select(x => new SampleTxtModel { LineNumber = GetCurrentLineNumber(txt, x.Value.Trim(), x), Text = x.Value.Trim() }).ToList();
-                var mCmds = keysTxtList.SelectMany(kt => regCommandName.Matches(ClearString(kt?.Text?.Trim() ?? "", "\"")).Select(x => x.Value.Trim().TrimEnd('('))).Distinct().ToList();
+                LineNumber = token.IsCancellationRequested ?
+                throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}")
+                : GetCurrentLineNumber(txt, x.Value.Trim(), x),
+                Text = x.Value.Trim()
+            });
+            var mCmds = keysTxtList.SelectMany(kt => regCommandName.Matches(ClearString(kt?.Text?.Trim() ?? "", "\"")).Select(x => x.Value.Trim().TrimEnd('('))).Distinct().ToList();
 
-                var compare = SampleTxtModel.GetComparer();
-                if (mCmds.Any())
-                    await Parallel.ForEachAsync(mCmds, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount, CancellationToken = token },
-                        async (item, token) =>
-                            await Task.Run(() =>
+            var compare = SampleTxtModel.GetComparer();
+            if (mCmds.Any())
+                await Parallel.ForEachAsync(mCmds, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount, CancellationToken = token },
+                    async (item, token) =>
+                        await Task.Run(() =>
+                        {
+                            if (token.IsCancellationRequested)
+                                throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+                            var list = keysTxtList.Where(x => x.Text.Contains(item)).Select(x => x).Distinct(compare);
+                            if (list.Any())
                             {
-                                try
+                                lock (keyWords)
                                 {
-                                    if (token.IsCancellationRequested)
+                                    keyWords.Add(new KeyWordsModel
                                     {
-                                        return;
-                                    }
-                                    var list = keysTxtList.Where(x => x.Text.Contains(item)).Select(x => x).Distinct(compare);
-                                    if (list.Any())
-                                    {
-                                        lock (keyWords)
-                                        {
-                                            keyWords.Add(new KeyWordsModel
-                                            {
-                                                KeyWord = item,
-                                                KeyWordsType = Core.Enums.EnKeyWordsType.CommandName,
-                                                SampleTxts = list.ToList()
-                                            });
-                                        }
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    _log.Error($"{item} broke - {EnviConst.EnvironmentNewLine}", ex);
-                                    updateHandler?.Invoke($"{item} broke in searching file {file} type is {Core.Enums.EnKeyWordsType.CommandName.ToString()}" +
-                                        $" - {ex.Message} - {EnviConst.EnvironmentNewLine}");
-                                }
-                                finally
-                                {
+                                        KeyWord = item,
+                                        KeyWordsType = Core.Enums.EnKeyWordsType.CommandName,
+                                        SampleTxts = list.ToList()
+                                    });
                                 }
                             }
-                        , token));
 
-            }
-            catch (Exception ex)
-            {
-                _log.Error($"Failed to pick up command keyword from {file}", ex);
-            }
-
+                        }
+                    , token));
             return keyWords;
         }
 
@@ -149,22 +140,12 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
             var matches = PickerClassName.Matches(txt).ToList();
             matches.AddRange(PickerMethodsName.Matches(txt));
             matches.AddRange(PickerPropertiesName.Matches(txt));
-            try
+            foreach (var m in matches)
             {
-                foreach (var m in matches)
-                {
-                    if (token.IsCancellationRequested)
-                    {
-                        break;
-                    }
-                    keyWords.Add(CreateKeyword(txt, m, Core.Enums.EnKeyWordsType.MethodOrClassName, '{'));
-                }
+                if (token.IsCancellationRequested)
+                    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+                keyWords.Add(CreateKeyword(txt, m, Core.Enums.EnKeyWordsType.MethodOrClassName, '{'));
             }
-            catch (Exception ex)
-            {
-                _log.Error($"Failed to pick up the class, method and properties names from {file}", ex);
-            }
-
             return keyWords;
         }
 
@@ -189,22 +170,12 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
             List<KeyWordsModel> keyWords = new();
             var matches = PickerOfCommentKeyWords1.Matches(txt).ToList();
             matches.AddRange(PickerOfCommentKeyWords2.Matches(txt));
-            try
+            foreach (var m in matches)
             {
-                foreach (var m in matches)
-                {
-                    if (token.IsCancellationRequested)
-                    {
-                        break;
-                    }
-                    keyWords.Add(CreateKeyword(txt, m, Core.Enums.EnKeyWordsType.Comment, '{'));
-                }
+                if (token.IsCancellationRequested)
+                    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+                keyWords.Add(CreateKeyword(txt, m, Core.Enums.EnKeyWordsType.Comment, '{'));
             }
-            catch (Exception ex)
-            {
-                _log.Error($"Failed to pick up keywords in Comment from {file}", ex);
-            }
-
             return keyWords;
         }
     }

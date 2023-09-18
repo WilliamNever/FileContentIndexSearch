@@ -65,34 +65,28 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
                         async (item, token) =>
                             await Task.Run(async () =>
                             {
-                                try
-                                {
-                                    if (token.IsCancellationRequested)
+                                if (token.IsCancellationRequested)
+                                    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+
+                                var kwordModel = await CreateKeywordModelAsync(txt, item, token);
+                                if (kwordModel != null)
+                                    lock (keyWords)
                                     {
-                                        return;
+                                        keyWords.Add(kwordModel);
                                     }
-                                    var kwordModel = await CreateKeywordModelAsync(txt, item, token);
-                                    if (kwordModel != null)
-                                        lock (keyWords)
-                                        {
-                                            keyWords.Add(kwordModel);
-                                        }
-                                }
-                                catch (Exception ex)
-                                {
-                                    _log.Error($"{item} broke - {EnviConst.EnvironmentNewLine}", ex);
-                                    updateHandler?.Invoke($"{item} broke - {ex.Message} - {EnviConst.EnvironmentNewLine}");
-                                }
-                                finally
-                                {
-                                }
                             }
                         , token));
 
             }
-            catch (Exception ex)
+            catch (OperationCanceledException ex)
             {
                 ex.Data.Add("Source file", $"Failed to Analysis {file} for time out!");
+                updateHandler?.Invoke($"Failed to Analysis {file} for time out!");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                ex.Data.Add("Source file", $"Failed to Analysis {file}");
                 throw;
             }
             return keyWords;
@@ -126,7 +120,7 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
             #endregion
 
             List<SampleTxtModel?> rtvs = await RunParallelForEach(matches.OfType<Match>(),
-                async match =>
+                async (match, tk) =>
                 {
                     return await Task.FromResult(new SampleTxtModel
                     {
@@ -155,7 +149,7 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
                 mtc = WordSearchingRegex.Match(txt, mtc.Index + 1);
             }
             var srchMatches = matches.Where(m => m.Length > (Config?.SmallCharacterNumberInString ?? 50));
-            
+
             List<Match> tmpMatches;
             while (srchMatches.Any())
             {
