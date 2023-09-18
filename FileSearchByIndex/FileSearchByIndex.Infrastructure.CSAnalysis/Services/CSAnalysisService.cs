@@ -12,8 +12,10 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
     {
         protected InboundFileConfig? Config;
         protected TaskThreadSettings _taskSettings;
-        public CSAnalysisService(IOptions<TaskThreadSettings> TaskSettings, IOptions<List<InboundFileConfig>> configs)
+        protected ITaskHealthService _taskHealth;
+        public CSAnalysisService(ITaskHealthService taskHealth, IOptions<TaskThreadSettings> TaskSettings, IOptions<List<InboundFileConfig>> configs)
         {
+            _taskHealth = taskHealth;
             _taskSettings = TaskSettings.Value;
             Config = configs?.Value.FirstOrDefault(x => x?.FileExtension?.Equals(FileExtension, StringComparison.OrdinalIgnoreCase) ?? false);
             InitCharEncoding(Config?.EncodingName);
@@ -33,29 +35,34 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
 
         public async Task<IEnumerable<KeyWordsModel>> AnalysisFileKeyWorks(string file, Action<string>? updateHandler, CancellationToken token = default)
         {
-            List<KeyWordsModel> keyWords = new List<KeyWordsModel>();
-            try
+            var keyWords = await _taskHealth.RunHealthTaskAysnc(async tk =>
             {
-                var txt = await ReadFileAsync(file);
-                var rsl = await Task.WhenAll(
-                    GetCommentKeyWordsAsync(file, txt, updateHandler, token),
-                    GetNameKeyWordsAsync(file, txt, updateHandler, token),
-                    GetCommandKeyWordsAsync(file, txt, updateHandler, token));
+                List<KeyWordsModel> keyWords = new List<KeyWordsModel>();
+                try
+                {
+                    var txt = await ReadFileAsync(file);
+                    var rsl = await Task.WhenAll(
+                        GetCommentKeyWordsAsync(file, txt, updateHandler, tk),
+                        GetNameKeyWordsAsync(file, txt, updateHandler, tk),
+                        GetCommandKeyWordsAsync(file, txt, updateHandler, tk));
 
-                foreach (var keyWord in rsl)
-                    if (keyWord != null)
-                    {
-                        var list = keyWord.ToList();
-                        list.ForEach(x => x.LineNumbers = x.SampleTxts.Select(y => y.LineNumber).ToList());
-                        keyWords.AddRange(list);
-                    }
+                    foreach (var keyWord in rsl)
+                        if (keyWord != null)
+                        {
+                            var list = keyWord.ToList();
+                            list.ForEach(x => x.LineNumbers = x.SampleTxts.Select(y => y.LineNumber).ToList());
+                            keyWords.AddRange(list);
+                        }
 
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-            return keyWords.OrderBy(x=>x.Frequency);
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+                return keyWords;
+            }, token);
+
+            return keyWords.OrderBy(x => x.Frequency);
         }
         /// <summary>
         /// pick up the keywords in commands

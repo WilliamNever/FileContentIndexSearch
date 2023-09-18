@@ -1,7 +1,6 @@
 using FileSearchByIndex.Core;
 using FileSearchByIndex.Core.Consts;
 using FileSearchByIndex.Core.Interfaces;
-using FileSearchByIndex.CustomForm;
 using FileSearchByIndex.Infrastructure.CSAnalysis.Services;
 using FileSearchByIndex.Infrastructure.Services;
 using FileSearchByIndex.Infrastructure.TextAnalysis.Services;
@@ -34,6 +33,7 @@ namespace FileSearchByIndex
                 .AddTransient<IAnalysisService, ENTextAnalysisService>()
                 .AddTransient<IAnalysisService, CHTextAnalysisService>()
                 .AddTransient<ISearchingIndexFilesSerivce, SearchingIndexFilesSerivce>()
+                .AddTransient<ITaskHealthService, TaskHealthService>()
                 ;
 
             ServicesRegister.Services

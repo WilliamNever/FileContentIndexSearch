@@ -11,5 +11,6 @@ namespace FileSearchByIndex.Core.Settings
         public bool RemainTmpWorkingFIles { get; set; }
         public bool IsAppendFullWidthCharacters { get; set; }
         public string SuffixForFullWidthChrFile { get; set; } = null!;
+        public int AnalysisOneFileTimeoutInMinutes { get; set; }
     }
 }
