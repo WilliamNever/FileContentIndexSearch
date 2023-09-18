@@ -91,5 +91,9 @@ namespace FileSearchByIndex.Core.Helper
 
             return retValue;
         }
+        public static string GetFileExtension(this string fileName)
+        {
+            return (Path.GetExtension(fileName) ?? "").Trim().ToLower();
+        }
     }
 }

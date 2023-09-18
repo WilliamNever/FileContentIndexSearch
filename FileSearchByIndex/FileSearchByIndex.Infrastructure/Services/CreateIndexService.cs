@@ -22,10 +22,18 @@ namespace FileSearchByIndex.Infrastructure.Services
         }
         public async Task<string> CreateIndexFileAsync(SearchModel search, Action<string>? updateHandler = null, CancellationToken token = default)
         {
+            /*
+             * if search.Filter is empty regards as *.*
+             */
+
+            var extList = (search.Filter ?? "").Split('|').ToList();
+            extList.ForEach(x => x.GetFileExtension());
+
             IndexFilesModel indexForPath = new IndexFilesModel()
             {
                 Description = search.IndexDescription,
-                IndexOfFolder = search.SearchPath
+                IndexOfFolder = search.SearchPath,
+                Filters = extList.Count < 1 ? "" : string.Join('|', extList)
             };
 
             var files = SearchDirectories(new string[] { search.SearchPath }, search, updateHandler, token);
