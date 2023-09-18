@@ -146,7 +146,7 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
                     throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
 
                 matches.Add(mtc);
-                mtc = WordSearchingRegex.Match(txt, mtc.Index + 1);
+                mtc = WordSearchingRegex.Match(txt, mtc.Index + mtc.Length);
             }
             var srchMatches = matches.Where(m => m.Length > (Config?.SmallCharacterNumberInString ?? 50));
 
