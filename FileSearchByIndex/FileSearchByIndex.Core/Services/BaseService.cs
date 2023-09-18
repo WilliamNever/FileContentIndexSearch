@@ -9,11 +9,11 @@ namespace FileSearchByIndex.Core.Services
     {
         protected log4net.ILog _log = log4net.LogManager.GetLogger(typeof(TB));
 
-        public async Task<List<RT?>> RunParallelForEach<RT, S>(IEnumerable<S> sources, Func<S, Task<RT?>> func, int MaxDegreeOfParallelism, CancellationToken token = default)
+        public async Task<List<RT?>> RunParallelForEach<RT, S>(IEnumerable<S> sources, Func<S, CancellationToken, Task<RT?>> func, int MaxDegreeOfParallelism, CancellationToken token = default)
         {
             return await RunParallelForEach(sources, func, new ParallelOptions { CancellationToken = token, MaxDegreeOfParallelism = MaxDegreeOfParallelism });
         }
-        public async Task<List<RT?>> RunParallelForEach<RT, S>(IEnumerable<S> sources, Func<S, Task<RT?>> func, ParallelOptions parallelOptions)
+        public async Task<List<RT?>> RunParallelForEach<RT, S>(IEnumerable<S> sources, Func<S, CancellationToken, Task<RT?>> func, ParallelOptions parallelOptions)
         {
             List<RT?> result = new();
             await Parallel.ForEachAsync(sources, parallelOptions,
@@ -22,19 +22,22 @@ namespace FileSearchByIndex.Core.Services
                         {
                             try
                             {
-                                if (token != CancellationToken.None && token.IsCancellationRequested) return;
-                                RT? rsl = await func.Invoke(item);
+                                if (token.IsCancellationRequested) 
+                                    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+                                RT? rsl = await func.Invoke(item, token);
                                 lock (result) { result.Add(rsl); }
                             }
                             catch (TaskCanceledException cnclEx)
                             {
                                 cnclEx.Data.Add("Source", item);
                                 _log.Error($"Cancel Task ...", cnclEx);
+                                throw;
                             }
                             catch (Exception ex)
                             {
                                 ex.Data.Add("Source", item);
                                 _log.Error($"Error in Parallel ...", ex);
+                                throw;
                             }
                             finally
                             {

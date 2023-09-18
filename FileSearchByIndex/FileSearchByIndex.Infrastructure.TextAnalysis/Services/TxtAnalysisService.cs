@@ -126,7 +126,7 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
             #endregion
 
             List<SampleTxtModel?> rtvs = await RunParallelForEach(matches.OfType<Match>(),
-                async match =>
+                async (match, tk) =>
                 {
                     return await Task.FromResult(new SampleTxtModel
                     {

@@ -82,7 +82,9 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
             var matches = PickerCommandInUsing.Matches(txt).ToList();
             try
             {
-                var keysTxtList = matches.Select(x => new SampleTxtModel { LineNumber = GetCurrentLineNumber(txt, x.Value.Trim(), x), Text = x.Value.Trim() }).ToList();
+                var keysTxtList = matches.Select(x => new SampleTxtModel { LineNumber = token.IsCancellationRequested?
+                    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}")
+                    : GetCurrentLineNumber(txt, x.Value.Trim(), x), Text = x.Value.Trim() });
                 var mCmds = keysTxtList.SelectMany(kt => regCommandName.Matches(ClearString(kt?.Text?.Trim() ?? "", "\"")).Select(x => x.Value.Trim().TrimEnd('('))).Distinct().ToList();
 
                 var compare = SampleTxtModel.GetComparer();
@@ -94,9 +96,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                                 try
                                 {
                                     if (token.IsCancellationRequested)
-                                    {
-                                        return;
-                                    }
+                                        throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
                                     var list = keysTxtList.Where(x => x.Text.Contains(item)).Select(x => x).Distinct(compare);
                                     if (list.Any())
                                     {
@@ -111,11 +111,19 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                                         }
                                     }
                                 }
+                                catch (OperationCanceledException ex)
+                                {
+                                    ex.Data.Add("Source file", $"Failed to Analysis {file} for time out!");
+                                    _log.Error($"Failed to Analysis for time out!", ex);
+                                    updateHandler?.Invoke($"Failed to Analysis {file} for time out!");
+                                    throw;
+                                }
                                 catch (Exception ex)
                                 {
                                     _log.Error($"{item} broke - {EnviConst.EnvironmentNewLine}", ex);
                                     updateHandler?.Invoke($"{item} broke in searching file {file} type is {Core.Enums.EnKeyWordsType.CommandName.ToString()}" +
                                         $" - {ex.Message} - {EnviConst.EnvironmentNewLine}");
+                                    throw;
                                 }
                                 finally
                                 {
@@ -124,9 +132,16 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                         , token));
 
             }
+            catch (OperationCanceledException ex)
+            {
+                ex.Data.Add("Source file", $"Failed to Analysis {file} for time out!");
+                _log.Error($"Failed to Analysis for time out!", ex);
+                throw;
+            }
             catch (Exception ex)
             {
                 _log.Error($"Failed to pick up command keyword from {file}", ex);
+                throw;
             }
 
             return keyWords;
@@ -154,15 +169,21 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                 foreach (var m in matches)
                 {
                     if (token.IsCancellationRequested)
-                    {
-                        break;
-                    }
+                        throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
                     keyWords.Add(CreateKeyword(txt, m, Core.Enums.EnKeyWordsType.MethodOrClassName, '{'));
                 }
+            }
+            catch (OperationCanceledException ex)
+            {
+                ex.Data.Add("Source file", $"Failed to Analysis {file} for time out!");
+                _log.Error($"Failed to Analysis for time out!", ex);
+                updateHandler?.Invoke($"Failed to Analysis {file} for time out!");
+                throw;
             }
             catch (Exception ex)
             {
                 _log.Error($"Failed to pick up the class, method and properties names from {file}", ex);
+                throw;
             }
 
             return keyWords;
@@ -194,15 +215,21 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                 foreach (var m in matches)
                 {
                     if (token.IsCancellationRequested)
-                    {
-                        break;
-                    }
+                        throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
                     keyWords.Add(CreateKeyword(txt, m, Core.Enums.EnKeyWordsType.Comment, '{'));
                 }
+            }
+            catch (OperationCanceledException ex)
+            {
+                ex.Data.Add("Source file", $"Failed to Analysis {file} for time out!");
+                _log.Error($"Failed to Analysis for time out!", ex);
+                updateHandler?.Invoke($"Failed to Analysis {file} for time out!");
+                throw;
             }
             catch (Exception ex)
             {
                 _log.Error($"Failed to pick up keywords in Comment from {file}", ex);
+                throw;
             }
 
             return keyWords;
