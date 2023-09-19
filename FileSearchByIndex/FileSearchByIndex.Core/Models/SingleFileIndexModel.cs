@@ -11,6 +11,8 @@ namespace FileSearchByIndex.Core.Models
         [System.Text.Json.Serialization.JsonIgnore]
         public string FileExtension { get { return Path.GetExtension(FileFullName); } }
         public string FileVersion { get; set; } = null!;
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+        public string? LoadingMessage { get; set; }
 
         public List<KeyWordsModel> KeyWords { get; set; } = new List<KeyWordsModel>();
         public List<SampleTxtModel> SampleTxts { get; set; } = new List<SampleTxtModel>();

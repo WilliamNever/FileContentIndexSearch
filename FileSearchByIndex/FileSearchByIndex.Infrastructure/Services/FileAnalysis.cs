@@ -37,16 +37,31 @@ namespace FileSearchByIndex.Infrastructure.Services
             var analysis = _getAnalyses(Path.GetExtension(file));
             if (analysis != null)
             {
-                var keyWords = (await analysis.AnalysisFileKeyWorks(file, updateHandler, token)).ToList();
-                if (keyWords != null && keyWords.Any())
+                try
                 {
-                    sfi.KeyWords.AddRange(keyWords);
-                    var smpls = keyWords.SelectMany(x => x.SampleTxts);
-                    var grps = smpls.GroupBy(x => x.LineNumber).OrderBy(x=>x.Key);
-                    foreach (var grp in grps)
+                    var keyWords = (await analysis.AnalysisFileKeyWorks(file, updateHandler, token)).ToList();
+                    if (keyWords != null && keyWords.Any())
                     {
-                        sfi.SampleTxts.Add(grp.OrderByDescending(x => x.Length).First());
+                        sfi.KeyWords.AddRange(keyWords);
+                        var smpls = keyWords.SelectMany(x => x.SampleTxts);
+                        var grps = smpls.GroupBy(x => x.LineNumber).OrderBy(x => x.Key);
+                        foreach (var grp in grps)
+                        {
+                            sfi.SampleTxts.Add(grp.OrderByDescending(x => x.Length).First());
+                        }
                     }
+                }
+                catch (OperationCanceledException ex)
+                {
+                    sfi.LoadingMessage = $"Failed to loading Messages for time out - {ex.Message}";
+                    updateHandler?.Invoke($"File Operation was Canceled for time out. - File {file} - {ex.Message} - {EnviConst.EnvironmentNewLine}");
+                    _log.Error($"Failed to Analysis for time out!", ex);
+                }
+                catch (Exception ex)
+                {
+                    sfi.LoadingMessage = $"Failed to loading Messages - {ex.Message}";
+                    updateHandler?.Invoke($"{file} broke - {ex.Message} - {EnviConst.EnvironmentNewLine}");
+                    _log.Error($"Failed to pick up command keyword from {file}", ex);
                 }
             }
             else
@@ -81,27 +96,16 @@ namespace FileSearchByIndex.Infrastructure.Services
                         async (item, token) =>
                             await Task.Run(async () =>
                             {
-                                try
+                                if (token.IsCancellationRequested)
                                 {
-                                    if (token.IsCancellationRequested)
+                                    return;
+                                }
+                                var singleFileIndex = await CreateSingleFileIndexAsync(BatchID, item, updateHandler, token);
+                                if (singleFileIndex != null)
+                                    lock (list)
                                     {
-                                        return;
+                                        list.AddRange(singleFileIndex);
                                     }
-                                    var singleFileIndex = await CreateSingleFileIndexAsync(BatchID, item, updateHandler, token);
-                                    if (singleFileIndex != null)
-                                        lock (list)
-                                        {
-                                            list.AddRange(singleFileIndex);
-                                        }
-                                }
-                                catch (Exception ex)
-                                {
-                                    _log.Error($"{item} broke - {EnviConst.EnvironmentNewLine}", ex);
-                                    updateHandler?.Invoke($"{item} broke - {ex.Message} - {EnviConst.EnvironmentNewLine}");
-                                }
-                                finally
-                                {
-                                }
                             }
                         , token));
             }
