@@ -30,6 +30,8 @@ namespace FileSearchByIndex.CustomForm
                     break;
                 default:
                     txtInfo.Text += $"{message ?? string.Empty}{Environment.NewLine}";
+                    txtInfo.SelectionStart = txtInfo.Text.Length;
+                    txtInfo.ScrollToCaret();
                     break;
             }
         }
