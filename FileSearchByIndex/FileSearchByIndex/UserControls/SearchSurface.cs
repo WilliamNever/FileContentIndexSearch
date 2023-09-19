@@ -82,12 +82,20 @@ namespace FileSearchByIndex.UserControls
             }
             finally
             {
-                Enabled = true;
+                Invoke(AcceptMessage, "", "enable");
             }
         }
         public void AcceptMessage(string mess, string location = "")
         {
-            pform?.AcceptMessage(mess, location);
+            switch (location)
+            {
+                case "enable":
+                    Enabled = true;
+                    break;
+                default:
+                    pform?.AcceptMessage(mess, location);
+                    break;
+            }
         }
         public virtual void CancelWorking(string workName = "NoName")
         {
