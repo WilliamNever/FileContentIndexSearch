@@ -53,14 +53,16 @@ namespace FileSearchByIndex.Infrastructure.Services
                 }
                 catch (OperationCanceledException ex)
                 {
-                    sfi.LoadingMessage = $"Failed to loading Messages for time out - {ex.Message}";
-                    updateHandler?.Invoke($"File Operation was Canceled for time out. - File {file} - {ex.Message} - {EnviConst.EnvironmentNewLine}");
+                    sfi.LoadingMessage = $"Failed to loading Messages for time out - {fileVersion} - {ex.Message}";
+                    updateHandler?.Invoke($"File Operation was Canceled for time out. - {fileVersion} - File {file} - {ex.Message} - {EnviConst.EnvironmentNewLine}");
+                    ex.Data.Add("FileVersion", $"{fileVersion}");
                     _log.Error($"Failed to Analysis for time out!", ex);
                 }
                 catch (Exception ex)
                 {
-                    sfi.LoadingMessage = $"Failed to loading Messages - {ex.Message}";
-                    updateHandler?.Invoke($"{file} broke - {ex.Message} - {EnviConst.EnvironmentNewLine}");
+                    sfi.LoadingMessage = $"Failed to loading Messages - {fileVersion} - {ex.Message}";
+                    updateHandler?.Invoke($"{file} broke - {fileVersion} - {ex.Message} - {EnviConst.EnvironmentNewLine}");
+                    ex.Data.Add("FileVersion", $"{fileVersion}");
                     _log.Error($"Failed to pick up command keyword from {file}", ex);
                 }
             }
