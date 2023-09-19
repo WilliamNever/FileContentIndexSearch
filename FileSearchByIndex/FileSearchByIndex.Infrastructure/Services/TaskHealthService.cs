@@ -21,7 +21,15 @@ namespace FileSearchByIndex.Infrastructure.Services
             else
                 source = new CancellationTokenSource();
             token.Register(() => source?.Cancel());
-            return await Task.Run(async () => { return await func.Invoke(source.Token); }, source.Token);
+            try
+            {
+                return await Task.Run(async () => { return await func.Invoke(source.Token); }, source.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                //todo: to do something when task was cancelled.
+                throw;
+            }
         }
     }
 }
