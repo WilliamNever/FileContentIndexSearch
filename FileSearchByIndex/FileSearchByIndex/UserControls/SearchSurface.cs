@@ -93,7 +93,7 @@ namespace FileSearchByIndex.UserControls
         {
             _cts?.Cancel();
             if (RunningTask != null && RunningTask.Status != TaskStatus.RanToCompletion)
-                Invoke(AcceptMessage, $"Current status is {RunningTask.Status} - Begin trying to Cancel the task....", "");
+                Invoke(AcceptMessage, $"Current status is {RunningTask.Status} - Begin trying to Cancel the task.... [${DateTime.Now}]", "");
         }
     }
 }
