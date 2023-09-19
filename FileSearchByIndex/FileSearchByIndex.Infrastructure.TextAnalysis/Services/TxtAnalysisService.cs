@@ -161,13 +161,25 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
 
                 tmpMatches = new List<Match>();
                 foreach (var match in srchMatches)
-                    tmpMatches.AddRange(WordSearchingRegex.Matches(LineWrap.Replace(match.Value ?? "", " "), match.Groups["word"].Length).OfType<Match>());
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+                    }
+                    tmpMatches.AddRange(WordSearchingRegex.Matches(LineWrap.Replace(match.Value ?? "", " "), match.Groups["word"].Length)
+                        .Select(x => token.IsCancellationRequested ?
+                            throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}") : x)
+                        .OfType<Match>());
+                }
 
                 matches.AddRange(tmpMatches);
                 srchMatches = tmpMatches.Where(m => m.Length > (Config?.SmallCharacterNumberInString ?? 50));
             }
 
-            return await Task.FromResult(matches.Select(x => x.Groups["word"].Value.Trim()).Distinct());
+            return await Task.FromResult(matches.Select(x =>
+                token.IsCancellationRequested ?
+                                throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}") :
+                x.Groups["word"].Value.Trim()).Distinct());
         }
     }
 }
