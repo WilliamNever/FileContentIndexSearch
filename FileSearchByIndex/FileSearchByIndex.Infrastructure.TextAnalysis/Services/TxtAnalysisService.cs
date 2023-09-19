@@ -95,8 +95,9 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
         private async Task<KeyWordsModel?> CreateKeywordModelAsync(string txt, string item, CancellationToken token)
         {
             KeyWordsModel rsl = new() { KeyWord = item, KeyWordsType = Core.Enums.EnKeyWordsType.FlatText };
-            Regex regex = new Regex($"((\\r)?{EnviConst.SpecNewLine1})(.+({item})+.+)+?\\1");
-            var matches = regex.Matches(txt);
+            Regex regex = new Regex($"((\r)?{EnviConst.SpecNewLine1})(.+({item})+.+)+?\\1");
+            var Txt_AddFirstLine = $"{EnviConst.EnvironmentNewLine}{txt}";
+            var matches = regex.Matches(Txt_AddFirstLine);
 
             if ((item?.Length ?? -1) < _minWordLength)
             {
@@ -124,7 +125,7 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
                 {
                     return await Task.FromResult(new SampleTxtModel
                     {
-                        LineNumber = GetCurrentLineNumber(txt, match.Value.Trim(), match),
+                        LineNumber = GetCurrentLineNumber(Txt_AddFirstLine, match.Value.Trim(), match),
                         Text = match.Value.Trim()
                     });
                 }

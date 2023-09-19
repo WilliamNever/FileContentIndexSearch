@@ -8,8 +8,8 @@ namespace FileSearchByIndex.Core.Services
     public class BaseAnalysis<T> : BaseService<T> where T : class
     {
         protected Regex EmptyChars { get => new(@"[\s]+"); }
-        protected Regex LineWrap { get => new($"((\\r)?{EnviConst.SpecNewLine1})"); }
-        protected Regex Paragraph { get => new($"((\\r)?{EnviConst.SpecNewLine1}){{2,}}"); }
+        protected Regex LineWrap { get => new($"((\r)?{EnviConst.SpecNewLine1})"); }
+        protected Regex Paragraph { get => new($"((\r)?{EnviConst.SpecNewLine1}){{2,}}"); }
         protected Encoding FileEncoding { get; private set; } = Encoding.UTF8;
         protected void InitCharEncoding(string? charCodeing)
         {
@@ -85,12 +85,12 @@ namespace FileSearchByIndex.Core.Services
                 KeyWord = kwd,
                 KeyWordsType = kvType,
             };
-            kv.SampleTxts.Add(new SampleTxtModel { LineNumber = GetCurrentLineNumber(ori_txt, m.Value.Trim(), m), Text = m.Value.Trim().TrimEnd('{') });
+            kv.SampleTxts.Add(new SampleTxtModel { LineNumber = GetCurrentLineNumber(ori_txt, m.Value.Trim(), m) + 1, Text = m.Value.Trim().TrimEnd('{') });
             return kv;
         }
         protected int GetCurrentLineNumber(string ori_txt, string partTxt, Match match)
         {
-            return LineWrap.Matches(ori_txt[0..ori_txt.IndexOf(partTxt?.Trim() ?? "", match.Index)]).Count + 1;
+            return LineWrap.Matches(ori_txt[0..ori_txt.IndexOf(partTxt?.Trim() ?? "", match.Index)]).Count;
         }
 
     }

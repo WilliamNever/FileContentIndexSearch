@@ -16,6 +16,11 @@ namespace ConsoleTest.Tests
     {
         public static async Task Main5Async()
         {
+            Regex rex = new Regex("(\r\n)");
+            var tstring = "\r\n";
+            var im = rex.IsMatch(tstring);
+
+
             string fs = "*.txt";
             string ext = Path.GetExtension(fs);
 
