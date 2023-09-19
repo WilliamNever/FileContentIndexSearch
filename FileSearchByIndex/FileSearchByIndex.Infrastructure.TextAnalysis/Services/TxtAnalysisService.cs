@@ -10,15 +10,17 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
     public class TxtAnalysisService : TxtAnalysisBase<TxtAnalysisService>, IAnalysisService
     {
         protected ITaskHealthService _taskHealth;
+        protected AppSettings _appSettings;
         public string FileExtension => ".txt";
         protected Func<string, IAnalysisService?> _getAnalyses;
         //protected override Regex WordSearchingRegex => new(@"(?<word>\b[\u4e00-\u9fa5\d_]{2,}|\b[\w -]{5,})(.*?)(\k<word>)");
         //protected override Regex WordSearchingRegex => new(@"(?<word>\b[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\u20000-\u3134a\d_-]{2,}|\b[\w -]{5,})(.*?)(\k<word>)");
         //protected override Regex WordSearchingRegex => new(@"(?<word>\b[\u4e00-\u9fff\uff00-\uffee\u20000-\u3134a\d_-]{2,}|\b[\w -]{5,})(.*?)(\k<word>)");
-        protected override Regex WordSearchingRegex => new(@"(?<word>\b[\u4e00-\u9fff]{2,}|\b([\w-]+[\s]+){2,})(.*?)(\k<word>)");
+        protected override Regex WordSearchingRegex { get; }
         public TxtAnalysisService(Func<string, IAnalysisService?> getAnalyses, ITaskHealthService taskHealth
-            , IOptions<TaskThreadSettings> TaskSettings, IOptions<List<InboundFileConfig>> configs)
+            , IOptions<TaskThreadSettings> TaskSettings, IOptions<List<InboundFileConfig>> configs, IOptions<AppSettings> AppSettings)
         {
+            _appSettings = AppSettings.Value;
             _taskHealth = taskHealth;
             _getAnalyses = getAnalyses;
             _taskSettings = TaskSettings.Value;
@@ -26,6 +28,21 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
             _repeatKeywordsConfig = Config?.GetRepeatKeywordsConfig() ?? new Dictionary<int, int>();
             _minWordLength = _repeatKeywordsConfig.Count > 0 ? _repeatKeywordsConfig.Min(x => x.Key) : 0;
             InitCharEncoding(Config?.EncodingName);
+
+            if (_appSettings.AnalysisOneFileTimeoutInMinutes > 0)
+            {
+                double spm = _appSettings.AnalysisOneFileTimeoutInMinutes / 2D;
+                WordSearchingRegex = new(
+                    @"(?<word>\b[\u4e00-\u9fff]{2,}|\b([\w-]+[\s]+){2,})(.*?)(\k<word>)"
+                    , RegexOptions.None, TimeSpan.FromMinutes(spm < 1 ? 1 : spm)
+                );
+            }
+            else
+            {
+                WordSearchingRegex = new(
+                    @"(?<word>\b[\u4e00-\u9fff]{2,}|\b([\w-]+[\s]+){2,})(.*?)(\k<word>)"
+                );
+            }
         }
 
         public async Task<IEnumerable<KeyWordsModel>> AnalysisFileKeyWorks(string file, Action<string>? updateHandler, CancellationToken token = default)
@@ -109,17 +126,6 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
                     return null;
             }
 
-            #region
-            //foreach (var match in matches.OfType<Match>())
-            //{
-            //    rsl.SampleTxts.Add(new SampleTxtModel
-            //    {
-            //        LineNumber = GetCurrentLineNumber(txt, match.Value.Trim(), match),
-            //        Text = match.Value.Trim()
-            //    });
-            //}
-            #endregion
-
             List<SampleTxtModel?> rtvs = await RunParallelForEach(matches.OfType<Match>(),
                 async (match, tk) =>
                 {
@@ -137,35 +143,24 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
 
         private async Task<IEnumerable<string>> PickupkeywordsAsync(string txt, CancellationToken token)
         {
-            var matches = new List<Match>();
-            Match mtc = WordSearchingRegex.Match(txt);
-            if (token.IsCancellationRequested)
-                throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
-            while (mtc.Success)
-            {
-                if (token.IsCancellationRequested)
-                    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
-
-                matches.Add(mtc);
-                mtc = WordSearchingRegex.Match(txt, mtc.Index + mtc.Length);
-            }
+            List<Match> matches = WordSearchingRegex.Matches(txt).OfType<Match>().ToList();
             var srchMatches = matches.Where(m => m.Length > (Config?.SmallCharacterNumberInString ?? 50));
 
             List<Match> tmpMatches;
             while (srchMatches.Any())
             {
-                if (token.IsCancellationRequested)
-                {
-                    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
-                }
+                //if (token.IsCancellationRequested)
+                //{
+                //    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+                //}
 
                 tmpMatches = new List<Match>();
                 foreach (var match in srchMatches)
                 {
-                    if (token.IsCancellationRequested)
-                    {
-                        throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
-                    }
+                    //if (token.IsCancellationRequested)
+                    //{
+                    //    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+                    //}
                     tmpMatches.AddRange(WordSearchingRegex.Matches(LineWrap.Replace(match.Value ?? "", " "), match.Groups["word"].Length)
                         .Select(x => token.IsCancellationRequested ?
                             throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}") : x)
