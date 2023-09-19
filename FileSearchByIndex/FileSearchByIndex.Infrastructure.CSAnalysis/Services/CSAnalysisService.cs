@@ -93,8 +93,12 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                 throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}")
                 : GetCurrentLineNumber(txt, x.Value.Trim(), x) + 1,
                 Text = x.Value.Trim()
-            });
-            var mCmds = keysTxtList.SelectMany(kt => regCommandName.Matches(ClearString(kt?.Text?.Trim() ?? "", "\"")).Select(x => x.Value.Trim().TrimEnd('('))).Distinct().ToList();
+            }).ToList();
+
+            var mCmds = keysTxtList.SelectMany(kt =>
+            token.IsCancellationRequested ?
+                throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}")
+                : regCommandName.Matches(ClearString(kt?.Text?.Trim() ?? "", "\"")).Select(x => x.Value.Trim().TrimEnd('('))).Distinct().ToList();
 
             var compare = SampleTxtModel.GetComparer();
             if (mCmds.Any())
