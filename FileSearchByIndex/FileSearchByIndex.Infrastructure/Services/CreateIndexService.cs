@@ -37,6 +37,8 @@ namespace FileSearchByIndex.Infrastructure.Services
             };
 
             var files = SearchDirectories(new string[] { search.SearchPath }, search, updateHandler, token);
+            updateHandler?.Invoke($"There are {files.Count} files, going to be processed. {EnviConst.EnvironmentNewLine}");
+
             List<string> PartailIndexFiles = new List<string>();
             if (files.Any())
             {
