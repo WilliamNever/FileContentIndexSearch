@@ -1,9 +1,12 @@
 ﻿using FileSearchByIndex.Core.Consts;
 using FileSearchByIndex.Core.Helper;
 using FileSearchByIndex.Core.Models;
+using FileSearchByIndex.Core.Settings;
+using FileSearchByIndex.Infrastructure.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -14,6 +17,42 @@ namespace ConsoleTest.Tests
 {
     public class MainTestThird
     {
+        public static async Task Main6Async()
+        {
+            string ss = "\r\nThe information provided in the Microsoft Knowledge Base is provided \"as is\" without warranty of any kind.  Microsoft disclaims all warranties, either express or implied, including the warranties of merchantability and fitness for a particular purpose.  In no Event shall Microsoft corporation or its suppliers be liable for Any damages whatsoever including direct, indirect, incidental, consequential, loss of business profits or special damages, even if Microsoft corporation or its suppliers have been advised of the possibility of such damages.  Some states do not allow the exclusion or limitation of liability for consequential or incidental damages so the foregoing limitation may not apply.\r\n\r\nMicrosoft does not warrant that the functions for the licensed software or code contained in the Knowledge Base will meet your requirements, or that the operation of the licensed software or code will be uninterrupted or error-free, or that defects in the licensed software or code can be corrected.  Furthermore, Microsoft does not warrant or make any representations regarding the use or the results of the use of the licensed software, code or related documentation in terms of their correctness, accuracy, reliability, or otherwise.  No verbal or written information or advice given by Microsoft or its authorized representatives shall create a warranty or in any way increase the scope of this warranty.  Should the licensed software or code prove defective after Microsoft has delivered the same, you, and you alone, shall assume the entire cost associated with all necessary servicing, repair or correction.\r\n";
+            var reg = new Regex($"((\r)?{EnviConst.SpecNewLine1})(.+(licensed)+.+)+?\\1");
+            var ms = reg.Matches(ss);
+        }
+        public static async Task Main6_2Async()
+        {
+            var txt = await ReadFileAsync(@"D:\WQPersonal\GitsProjects\FileContentIndexSearch\FileSearchByIndex\ConsoleTest\bin\Debug\net6.0\tmp\files.txt");
+            var fList = ConversionsHelper.DeserializeJson<List<string>>(txt);
+
+            CreateIndexService sc = new CreateIndexService(new TaskThreadSettings(), new AppSettings(), null);
+            var files = sc.SearchDirectories(new string[] { "D:\\WorkSpaces" }, new SearchModel { Filter = "*.cs|*.txt", IsIncludeSub = true }).OrderBy(x=>x).ToList();
+
+            var extra = files.Except(fList).ToList();
+        }
+        public static async Task Main6_1Async()
+        {
+            List<string> fileslist = new List<string>();
+            var files = Directory.GetFiles("D:\\WQPersonal\\PrvCustomerTools\\FileSearchByIndex\\TempWorking", "*.json_cn");
+            foreach(var file in files) {
+                var txt = await ReadFileAsync(file);
+                var obj1 = ConversionsHelper.DeserializeJson<SingleFileIndexModel>(txt);
+                fileslist.Add(obj1!.FileFullName);
+            }
+            var sortedFileNames = fileslist.OrderBy(x => x).ToList();
+            await WriteFileFileAsync("tmp", "files.txt", ConversionsHelper.SerializeToJson(sortedFileNames, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+        }
+        public async static Task WriteFileFileAsync(string path, string filename, string content)
+        {
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+            using StreamWriter writer = new StreamWriter(Path.Combine(path, filename), false, Encoding.UTF8);
+            await writer.WriteAsync(content);
+            writer.Flush();
+        }
+
         public static async Task Main5Async()
         {
             Regex rex = new Regex("(\r\n)");

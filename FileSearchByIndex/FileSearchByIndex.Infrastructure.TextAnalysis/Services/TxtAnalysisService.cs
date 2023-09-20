@@ -17,6 +17,7 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
         //protected override Regex WordSearchingRegex => new(@"(?<word>\b[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\u20000-\u3134a\d_-]{2,}|\b[\w -]{5,})(.*?)(\k<word>)");
         //protected override Regex WordSearchingRegex => new(@"(?<word>\b[\u4e00-\u9fff\uff00-\uffee\u20000-\u3134a\d_-]{2,}|\b[\w -]{5,})(.*?)(\k<word>)");
         protected override Regex WordSearchingRegex { get; }
+        protected double RegexTimeOutInMinutes { get; }
         public TxtAnalysisService(Func<string, IAnalysisService?> getAnalyses, ITaskHealthService taskHealth
             , IOptions<TaskThreadSettings> TaskSettings, IOptions<List<InboundFileConfig>> configs, IOptions<AppSettings> AppSettings)
         {
@@ -31,14 +32,16 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
 
             if (_appSettings.AnalysisOneFileTimeoutInMinutes > 0)
             {
-                double spm = _appSettings.AnalysisOneFileTimeoutInMinutes / 2D;
+                double spm = _appSettings.AnalysisOneFileTimeoutInMinutes / 3D;
+                RegexTimeOutInMinutes = spm < 1d ? 1d : spm;
                 WordSearchingRegex = new(
                     @"(?<word>\b[\u4e00-\u9fff]{2,}|\b([\w-]+[\s]+){2,})(.*?)(\k<word>)"
-                    , RegexOptions.None, TimeSpan.FromMinutes(spm < 1 ? 1 : spm)
+                    , RegexOptions.None, TimeSpan.FromMinutes(RegexTimeOutInMinutes)
                 );
             }
             else
             {
+                RegexTimeOutInMinutes = -1;
                 WordSearchingRegex = new(
                     @"(?<word>\b[\u4e00-\u9fff]{2,}|\b([\w-]+[\s]+){2,})(.*?)(\k<word>)"
                 );
@@ -112,8 +115,10 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
         private async Task<KeyWordsModel?> CreateKeywordModelAsync(string txt, string item, CancellationToken token)
         {
             KeyWordsModel rsl = new() { KeyWord = item, KeyWordsType = Core.Enums.EnKeyWordsType.FlatText };
-            Regex regex = new Regex($"((\r)?{EnviConst.SpecNewLine1})(.+({item})+.+)+?\\1");
-            var Txt_AddFirstLine = $"{EnviConst.EnvironmentNewLine}{txt}";
+            Regex regex = RegexTimeOutInMinutes < 0 ?
+                new Regex($"((\r)?{EnviConst.SpecNewLine1})(.+({item})+.+)+?\\1")
+                : new Regex($"((\r)?{EnviConst.SpecNewLine1})(.+({item})+.+)+?\\1", RegexOptions.None, TimeSpan.FromMinutes(RegexTimeOutInMinutes));
+            var Txt_AddFirstLine = $"{EnviConst.EnvironmentNewLine}{txt}{EnviConst.EnvironmentNewLine}";
             var matches = regex.Matches(Txt_AddFirstLine);
 
             if ((item?.Length ?? -1) < _minWordLength)
@@ -149,18 +154,9 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
             List<Match> tmpMatches;
             while (srchMatches.Any())
             {
-                //if (token.IsCancellationRequested)
-                //{
-                //    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
-                //}
-
                 tmpMatches = new List<Match>();
                 foreach (var match in srchMatches)
                 {
-                    //if (token.IsCancellationRequested)
-                    //{
-                    //    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
-                    //}
                     tmpMatches.AddRange(WordSearchingRegex.Matches(LineWrap.Replace(match.Value ?? "", " "), match.Groups["word"].Length)
                         .Select(x => token.IsCancellationRequested ?
                             throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}") : x)

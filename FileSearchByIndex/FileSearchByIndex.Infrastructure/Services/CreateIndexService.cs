@@ -115,7 +115,7 @@ namespace FileSearchByIndex.Infrastructure.Services
                 return null;
         }
 
-        private List<string> SearchDirectories(string[] searchDir, SearchModel searcher, Action<string>? updateHandler = null, CancellationToken token = default)
+        public List<string> SearchDirectories(string[] searchDir, SearchModel searcher, Action<string>? updateHandler = null, CancellationToken token = default)
         {
             List<string> files = new();
             List<string> directories = new();
