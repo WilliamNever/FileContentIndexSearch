@@ -30,22 +30,20 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
             _minWordLength = _repeatKeywordsConfig.Count > 0 ? _repeatKeywordsConfig.Min(x => x.Key) : 0;
             InitCharEncoding(Config?.EncodingName);
 
+            double spm = _appSettings.AnalysisOneFileTimeoutInMinutes / 3D;
             if (_appSettings.AnalysisOneFileTimeoutInMinutes > 0)
             {
-                double spm = _appSettings.AnalysisOneFileTimeoutInMinutes / 3D;
                 RegexTimeOutInMinutes = spm < 1d ? 1d : spm;
-                WordSearchingRegex = new(
-                    @"(?<word>\b[\u4e00-\u9fff]{2,}|\b([\w-]+[\s]+){2,})(.*?)(\k<word>)"
-                    , RegexOptions.None, TimeSpan.FromMinutes(RegexTimeOutInMinutes)
-                );
             }
             else
             {
                 RegexTimeOutInMinutes = -1;
-                WordSearchingRegex = new(
-                    @"(?<word>\b[\u4e00-\u9fff]{2,}|\b([\w-]+[\s]+){2,})(.*?)(\k<word>)"
-                );
             }
+
+            WordSearchingRegex = new(
+                    @"(?<word>\b[\u4e00-\u9fff]{2,}|\b([\w-]+[\s]+){2,})(.*?)(\k<word>)"
+                    , RegexOptions.None, GetRegexTimeout(RegexTimeOutInMinutes)
+                );
         }
 
         public async Task<IEnumerable<KeyWordsModel>> AnalysisFileKeyWorks(string file, Action<string>? updateHandler, CancellationToken token = default)
@@ -115,9 +113,8 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
         private async Task<KeyWordsModel?> CreateKeywordModelAsync(string txt, string item, CancellationToken token)
         {
             KeyWordsModel rsl = new() { KeyWord = item, KeyWordsType = Core.Enums.EnKeyWordsType.FlatText };
-            Regex regex = RegexTimeOutInMinutes < 0 ?
-                new Regex($"((\r)?{EnviConst.SpecNewLine1})(.+({item})+.+)+?\\1")
-                : new Regex($"((\r)?{EnviConst.SpecNewLine1})(.+({item})+.+)+?\\1", RegexOptions.None, TimeSpan.FromMinutes(RegexTimeOutInMinutes));
+            Regex regex = new Regex($"((\r)?{EnviConst.SpecNewLine1})(.+({item})+.+)+?\\1"
+                , RegexOptions.None, GetRegexTimeout(RegexTimeOutInMinutes));
             var Txt_AddFirstLine = $"{EnviConst.EnvironmentNewLine}{txt}{EnviConst.EnvironmentNewLine}";
             var matches = regex.Matches(Txt_AddFirstLine);
 

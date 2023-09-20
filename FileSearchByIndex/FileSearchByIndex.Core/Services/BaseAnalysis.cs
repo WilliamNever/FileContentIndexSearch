@@ -92,6 +92,9 @@ namespace FileSearchByIndex.Core.Services
         {
             return LineWrap.Matches(ori_txt[0..ori_txt.IndexOf(partTxt?.Trim() ?? "", match.Index)]).Count;
         }
-
+        protected TimeSpan GetRegexTimeout(double dv)
+        {
+            return dv < 0 ? Regex.InfiniteMatchTimeout : TimeSpan.FromMinutes(dv);
+        }
     }
 }
