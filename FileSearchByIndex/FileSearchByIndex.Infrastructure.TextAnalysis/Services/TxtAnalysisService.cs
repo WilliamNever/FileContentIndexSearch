@@ -77,7 +77,19 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
             try
             {
                 var txt = await ReadFileAsync(file);
-                var strKWs = await PickupkeywordsAsync(txt, token);
+
+                IEnumerable<string> strKWs;
+                using (var autoReset = ServicesRegister.GetAutoResetService<IEnumerable<string>>())
+                {
+                    var task = autoReset.RunAutoResetMethodAsync(
+                       async xtk => { return await PickupkeywordsAsync(txt, xtk); }
+                       , token);
+                    autoReset.WaitOne();
+                    if (token.IsCancellationRequested)
+                        throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+
+                    strKWs = await task;
+                }
 
                 if (strKWs != null && strKWs.Any())
                     await Parallel.ForEachAsync(strKWs, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount, CancellationToken = token },
@@ -87,8 +99,22 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
                                 if (token.IsCancellationRequested)
                                     throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
 
-                                var kwordModel = await CreateKeywordModelAsync(txt, item, token);
-                                if (kwordModel != null)
+                                KeyWordsModel kwordModel;
+
+                                using (var autoReset = ServicesRegister.GetAutoResetService<KeyWordsModel>())
+                                {
+                                    var task = autoReset.RunAutoResetMethodAsync(
+                                       async xtk => { return (await CreateKeywordModelAsync(txt, item, xtk)) ?? new KeyWordsModel(); }
+                                       , token);
+                                    autoReset.WaitOne();
+                                    if (token.IsCancellationRequested)
+                                        throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+
+                                    kwordModel = await task;
+                                }
+
+
+                                if (!string.IsNullOrEmpty(kwordModel.KeyWord))
                                     lock (keyWords)
                                     {
                                         keyWords.Add(kwordModel);
@@ -118,18 +144,7 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
                 , RegexOptions.None, GetRegexTimeout(RegexTimeOutInMinutes));
             var Txt_AddFirstLine = $"{EnviConst.EnvironmentNewLine}{txt}{EnviConst.EnvironmentNewLine}";
 
-            MatchCollection matches;
-            using (var autoReset = ServicesRegister.GetAutoResetService<MatchCollection>())
-            {
-                var task = autoReset.RunAutoResetMethodAsync(
-                   async xtk => { return await Task.Run(() => regex.Matches(Txt_AddFirstLine)); }
-                   , token);
-                autoReset.WaitOne();
-                if (token.IsCancellationRequested)
-                    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
-
-                matches = await task;
-            }
+            var matches = regex.Matches(Txt_AddFirstLine);
             if ((item?.Length ?? -1) < _minWordLength)
             {
                 return null;
@@ -157,18 +172,7 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
 
         private async Task<IEnumerable<string>> PickupkeywordsAsync(string txt, CancellationToken token)
         { 
-            List<Match> matches;
-            using (var autoReset = ServicesRegister.GetAutoResetService<List<Match>>())
-            {
-                var task = autoReset.RunAutoResetMethodAsync(
-                   async xtk => { return await Task.Run(() => WordSearchingRegex.Matches(txt).OfType<Match>().ToList()); }
-                   , token);
-                autoReset.WaitOne();
-                if (token.IsCancellationRequested)
-                    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
-
-                matches = await task; //WordSearchingRegex.Matches(txt).OfType<Match>().ToList();
-            }
+            var matches = WordSearchingRegex.Matches(txt).OfType<Match>().ToList();
             var srchMatches = matches.Where(m => m.Length > (Config?.SmallCharacterNumberInString ?? 50));
 
             List<Match> tmpMatches;
