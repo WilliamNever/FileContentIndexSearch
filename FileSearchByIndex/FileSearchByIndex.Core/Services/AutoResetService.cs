@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace FileSearchByIndex.Core.Services
 {
-    public class AutoResetService : IAutoResetService
+    public class AutoResetService<T> : BaseService<AutoResetService<T>>, IAutoResetService<T> where T : class
     {
-        public async Task RunAutoResetMethod<T>(Func<CancellationToken, Task<T>> func, CancellationToken token = default) where T : class
+        public async Task RunAutoResetMethod(Func<CancellationToken, Task<T>> func, CancellationToken token = default)
         {
         }
     }

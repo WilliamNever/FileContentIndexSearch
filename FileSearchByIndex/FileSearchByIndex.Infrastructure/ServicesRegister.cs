@@ -1,4 +1,6 @@
 ﻿using FileSearchByIndex.Core.Consts;
+using FileSearchByIndex.Core.Interfaces;
+using FileSearchByIndex.Core.Services;
 using FileSearchByIndex.Core.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FileSearchByIndex.Core
+namespace FileSearchByIndex.Infrastructure
 {
     public static class ServicesRegister
     {
@@ -33,6 +35,11 @@ namespace FileSearchByIndex.Core
             Services.Configure<AppSettings>(root.GetSection(nameof(AppSettings)));
             Services.Configure<TaskThreadSettings>(root.GetSection(nameof(TaskThreadSettings)));
             Services.Configure<List<InboundFileConfig>>(root.GetSection("InboundFileConfigs"));
+        }
+
+        public static IAutoResetService<T> GetAutoResetService<T>() where T : class
+        {
+            return new AutoResetService<T>();
         }
     }
 }

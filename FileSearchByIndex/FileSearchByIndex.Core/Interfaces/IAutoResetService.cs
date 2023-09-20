@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FileSearchByIndex.Core.Interfaces
 {
-    public interface IAutoResetService
+    public interface IAutoResetService<T> where T : class
     {
     }
 }

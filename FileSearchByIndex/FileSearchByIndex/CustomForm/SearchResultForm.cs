@@ -1,6 +1,6 @@
-﻿using FileSearchByIndex.Core;
-using FileSearchByIndex.Core.Interfaces;
+﻿using FileSearchByIndex.Core.Interfaces;
 using FileSearchByIndex.Core.ParameterModels;
+using FileSearchByIndex.Infrastructure;
 
 namespace FileSearchByIndex.CustomForm
 {

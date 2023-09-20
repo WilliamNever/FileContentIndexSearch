@@ -1,8 +1,8 @@
-﻿using FileSearchByIndex.Core;
-using FileSearchByIndex.Core.Consts;
+﻿using FileSearchByIndex.Core.Consts;
 using FileSearchByIndex.Core.Helper;
 using FileSearchByIndex.Core.Interfaces;
 using FileSearchByIndex.Core.Models;
+using FileSearchByIndex.Infrastructure;
 using System.Text.RegularExpressions;
 
 namespace FileSearchByIndex.UserControls
