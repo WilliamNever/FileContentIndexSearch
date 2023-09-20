@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FileSearchByIndex.Infrastructure
+namespace FileSearchByIndex.Core
 {
     public static class ServicesRegister
     {

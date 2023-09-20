@@ -1,4 +1,5 @@
-﻿using FileSearchByIndex.Core.Consts;
+﻿using FileSearchByIndex.Core;
+using FileSearchByIndex.Core.Consts;
 using FileSearchByIndex.Core.Interfaces;
 using FileSearchByIndex.Core.Models;
 using FileSearchByIndex.Core.Settings;
@@ -116,8 +117,19 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
             Regex regex = new($"((\r)?{EnviConst.SpecNewLine1})(.+({item})+.+)+?\\1"
                 , RegexOptions.None, GetRegexTimeout(RegexTimeOutInMinutes));
             var Txt_AddFirstLine = $"{EnviConst.EnvironmentNewLine}{txt}{EnviConst.EnvironmentNewLine}";
-            var matches = regex.Matches(Txt_AddFirstLine);
 
+            MatchCollection matches;
+            using (var autoReset = ServicesRegister.GetAutoResetService<MatchCollection>())
+            {
+                var task = autoReset.RunAutoResetMethodAsync(
+                   async xtk => { return await Task.Run(() => regex.Matches(Txt_AddFirstLine)); }
+                   , token);
+                autoReset.WaitOne();
+                if (token.IsCancellationRequested)
+                    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+
+                matches = await task;
+            }
             if ((item?.Length ?? -1) < _minWordLength)
             {
                 return null;
@@ -144,8 +156,19 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
         }
 
         private async Task<IEnumerable<string>> PickupkeywordsAsync(string txt, CancellationToken token)
-        {
-            List<Match> matches = WordSearchingRegex.Matches(txt).OfType<Match>().ToList();
+        { 
+            List<Match> matches;
+            using (var autoReset = ServicesRegister.GetAutoResetService<List<Match>>())
+            {
+                var task = autoReset.RunAutoResetMethodAsync(
+                   async xtk => { return await Task.Run(() => WordSearchingRegex.Matches(txt).OfType<Match>().ToList()); }
+                   , token);
+                autoReset.WaitOne();
+                if (token.IsCancellationRequested)
+                    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+
+                matches = await task; //WordSearchingRegex.Matches(txt).OfType<Match>().ToList();
+            }
             var srchMatches = matches.Where(m => m.Length > (Config?.SmallCharacterNumberInString ?? 50));
 
             List<Match> tmpMatches;
