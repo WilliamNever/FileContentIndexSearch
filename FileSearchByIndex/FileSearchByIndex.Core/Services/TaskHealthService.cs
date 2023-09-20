@@ -1,9 +1,13 @@
 ﻿using FileSearchByIndex.Core.Interfaces;
-using FileSearchByIndex.Core.Services;
 using FileSearchByIndex.Core.Settings;
 using Microsoft.Extensions.Options;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace FileSearchByIndex.Infrastructure.Services
+namespace FileSearchByIndex.Core.Services
 {
     public class TaskHealthService : BaseService<TaskHealthService>, ITaskHealthService
     {
