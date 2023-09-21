@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace FileSearchByIndex.Core.Interfaces
 {
-    public interface ITaskHealthService
+    public interface ITaskHealthService : IDisposable
     {
-        Task<TResult> RunHealthTaskAysnc<TResult>(Func<CancellationToken, Task<TResult>> func, CancellationToken token = default);
+        Task<TResult> RunHealthTaskAysnc<TResult>(Func<CancellationToken, Task<TResult>> func, CancellationToken token = default) where TResult : class;
     }
 }

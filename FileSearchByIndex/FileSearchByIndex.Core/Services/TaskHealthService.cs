@@ -1,23 +1,24 @@
 ﻿using FileSearchByIndex.Core.Interfaces;
 using FileSearchByIndex.Core.Settings;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FileSearchByIndex.Core.Services
 {
     public class TaskHealthService : BaseService<TaskHealthService>, ITaskHealthService
     {
         protected AppSettings _appSettings;
-        public TaskHealthService(IOptions<AppSettings> AppSettings)
+        protected IAutoResetService _autoResetService;
+        public TaskHealthService(IOptions<AppSettings> AppSettings, IAutoResetService autoResetService)
         {
             _appSettings = AppSettings.Value;
+            _autoResetService = autoResetService;
         }
 
-        public async Task<TResult> RunHealthTaskAysnc<TResult>(Func<CancellationToken, Task<TResult>> func, CancellationToken token = default)
+        public async Task<TResult> RunHealthTaskWithAutoRestWaitAysnc<TResult>(Func<CancellationToken, Task<TResult>> func, CancellationToken token = default) where TResult : class
+        {
+            return default(TResult);
+        }
+        public async Task<TResult> RunHealthTaskAysnc<TResult>(Func<CancellationToken, Task<TResult>> func, CancellationToken token = default) where TResult : class
         {
             CancellationTokenSource source;
             if (_appSettings.AnalysisOneFileTimeoutInMinutes > 0)
@@ -34,6 +35,11 @@ namespace FileSearchByIndex.Core.Services
                 //todo: to do something when task was cancelled.
                 throw;
             }
+        }
+
+        void IDisposable.Dispose()
+        {
+            _autoResetService.Dispose();
         }
     }
 }
