@@ -34,20 +34,20 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
             {
                 var keyWords = await _taskHealth.RunHealthTaskWithAutoRestWaitAysnc(async (tk) =>
                 {
-                    List<KeyWordsModel> keyWords = new();
+                    List<KeyWordsModel> kws = new();
 
                     if (Config?.CanAutoSelectAnalysisService ?? false)
                     {
                         IAnalysisService analysis =
                             _getAnalyses(HasChineseInFileName(Path.GetFileName(file)) ? ".txt.cn" : ".txt.en")
                             ?? throw new Exception($"No analysis for file {file}");
-                        keyWords.AddRange(await analysis.AnalysisFileKeyWorks(file, updateHandler, tk));
+                        kws.AddRange(await analysis.AnalysisFileKeyWorks(file, updateHandler, tk));
                     }
                     else
                     {
-                        keyWords.AddRange(await AnalysisInCommonAsync(file, updateHandler, tk));
+                        kws.AddRange(await AnalysisInCommonAsync(file, updateHandler, tk));
                     }
-                    return keyWords;
+                    return kws;
                 }, token);
 
                 keyWords.ForEach(x => x.LineNumbers = x.SampleTxts.Select(y => y.LineNumber).ToList());

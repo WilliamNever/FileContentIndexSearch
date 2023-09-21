@@ -35,42 +35,42 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
 
         public async Task<IEnumerable<KeyWordsModel>> AnalysisFileKeyWorks(string file, Action<string>? updateHandler, CancellationToken token = default)
         {
-            var keyWords = await _taskHealth.RunHealthTaskWithAutoRestWaitAysnc(async tk =>
+            try
             {
-                List<KeyWordsModel> keyWords = new List<KeyWordsModel>();
-                try
+                var keyWords = await _taskHealth.RunHealthTaskWithAutoRestWaitAysnc(async tk =>
                 {
+                    List<KeyWordsModel> kws = new List<KeyWordsModel>();
+
                     var txt = await ReadFileAsync(file);
                     var rsl = await Task.WhenAll(
-                        GetCommentKeyWordsAsync(file, txt, updateHandler, tk),
-                        GetNameKeyWordsAsync(file, txt, updateHandler, tk),
-                        GetCommandKeyWordsAsync(file, txt, updateHandler, tk));
+                    GetCommentKeyWordsAsync(file, txt, updateHandler, tk),
+                    GetNameKeyWordsAsync(file, txt, updateHandler, tk),
+                    GetCommandKeyWordsAsync(file, txt, updateHandler, tk));
 
                     foreach (var keyWord in rsl)
                         if (keyWord != null)
                         {
                             var list = keyWord.ToList();
                             list.ForEach(x => x.LineNumbers = x.SampleTxts.Select(y => y.LineNumber).ToList());
-                            keyWords.AddRange(list);
+                            kws.AddRange(list);
                         }
+                    return kws;
+                }, token);
 
-                }
-                catch (OperationCanceledException ex)
-                {
-                    ex.Data.Add("Source file", $"Failed to Analysis {file} for time out!");
-                    _log.Error($"Failed to Analysis for time out!", ex);
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    ex.Data.Add("Source file", $"Failed to Analysis {file} for time out!");
-                    _log.Error($"Failed to pick up command keyword from {file}", ex);
-                    throw;
-                }
-                return keyWords;
-            }, token);
-
-            return keyWords.OrderBy(x => x.Frequency);
+                return keyWords.OrderBy(x => x.Frequency);
+            }
+            catch (OperationCanceledException ex)
+            {
+                ex.Data.Add("Source file", $"Failed to Analysis {file} for time out!");
+                _log.Error($"Failed to Analysis for time out!", ex);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                ex.Data.Add("Source file", $"Failed to Analysis {file} for time out!");
+                _log.Error($"Failed to pick up command keyword from {file}", ex);
+                throw;
+            }
         }
         /// <summary>
         /// pick up the keywords in commands

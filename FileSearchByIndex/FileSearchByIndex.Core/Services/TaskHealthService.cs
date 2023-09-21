@@ -21,16 +21,20 @@ namespace FileSearchByIndex.Core.Services
             TResult rsl;
             try
             {
-                using (var task = _autoResetService.RunAutoResetMethodAsync(
-                           async xtk => await func.Invoke(xtk), source.Token))
-                {
-                    _autoResetService.WaitOne();
-                    if (token.IsCancellationRequested)
-                        throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
-                    rsl = await task;
-                }
+                var task = _autoResetService.RunAutoResetMethodAsync(
+                          async xtk => await func.Invoke(xtk), source.Token);
+                _autoResetService.WaitOne();
+                if (source.Token.IsCancellationRequested)
+                    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+                rsl = await task;
+
             }
             catch (OperationCanceledException)
+            {
+                //todo: to do something when task was cancelled.
+                throw;
+            }
+            catch (Exception)
             {
                 //todo: to do something when task was cancelled.
                 throw;
@@ -45,6 +49,11 @@ namespace FileSearchByIndex.Core.Services
                 return await Task.Run(async () => { return await func.Invoke(source.Token); }, source.Token);
             }
             catch (OperationCanceledException)
+            {
+                //todo: to do something when task was cancelled.
+                throw;
+            }
+            catch (Exception)
             {
                 //todo: to do something when task was cancelled.
                 throw;
