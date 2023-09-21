@@ -5,8 +5,10 @@ namespace FileSearchByIndex.Core.Services
     public class AutoResetService : BaseService<AutoResetService>, IAutoResetService
     {
         protected AutoResetEvent autoReset = new AutoResetEvent(false);
+
         public async Task<T> RunAutoResetMethodAsync<T>(Func<CancellationToken, Task<T>> func, CancellationToken token = default) where T : class
         {
+            autoReset.Reset();
             token.Register(() => Set());
             var rsl = await func.Invoke(token);
             Set();
@@ -14,7 +16,6 @@ namespace FileSearchByIndex.Core.Services
         }
         public void WaitOne()
         {
-            autoReset.Reset();
             autoReset.WaitOne();
         }
         public void Set() => autoReset.Set();

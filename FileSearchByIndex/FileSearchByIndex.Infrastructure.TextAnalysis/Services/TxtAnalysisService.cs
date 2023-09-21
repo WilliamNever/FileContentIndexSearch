@@ -81,14 +81,16 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
                 IEnumerable<string> strKWs;
                 using (var autoReset = ServicesRegister.GetService<IAutoResetService>())
                 {
-                    using var task = autoReset.RunAutoResetMethodAsync(
+                    using (var task = autoReset.RunAutoResetMethodAsync(
                        async xtk => { return await PickupkeywordsAsync(txt, xtk); }
-                       , token);
-                    autoReset.WaitOne();
-                    if (token.IsCancellationRequested)
-                        throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+                       , token))
+                    {
+                        autoReset.WaitOne();
+                        if (token.IsCancellationRequested)
+                            throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
 
-                    strKWs = await task;
+                        strKWs = await task;
+                    }
                 }
 
                 if (strKWs != null && strKWs.Any())
@@ -103,14 +105,16 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
 
                                 using (var autoReset = ServicesRegister.GetService<IAutoResetService>())
                                 {
-                                    using var task = autoReset.RunAutoResetMethodAsync(
+                                    using (var task = autoReset.RunAutoResetMethodAsync(
                                        async xtk => { return (await CreateKeywordModelAsync(txt, item, xtk)) ?? new KeyWordsModel(); }
-                                       , token);
-                                    autoReset.WaitOne();
-                                    if (token.IsCancellationRequested)
-                                        throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+                                       , token))
+                                    {
+                                        autoReset.WaitOne();
+                                        if (token.IsCancellationRequested)
+                                            throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
 
-                                    kwordModel = await task;
+                                        kwordModel = await task;
+                                    }
                                 }
 
 
