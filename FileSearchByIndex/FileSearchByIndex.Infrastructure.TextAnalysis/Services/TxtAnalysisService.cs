@@ -79,9 +79,9 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
                 var txt = await ReadFileAsync(file);
 
                 IEnumerable<string> strKWs;
-                using (var autoReset = ServicesRegister.GetAutoResetService<IEnumerable<string>>())
+                using (var autoReset = ServicesRegister.GetService<IAutoResetService>())
                 {
-                    var task = autoReset.RunAutoResetMethodAsync(
+                    using var task = autoReset.RunAutoResetMethodAsync(
                        async xtk => { return await PickupkeywordsAsync(txt, xtk); }
                        , token);
                     autoReset.WaitOne();
@@ -101,9 +101,9 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
 
                                 KeyWordsModel kwordModel;
 
-                                using (var autoReset = ServicesRegister.GetAutoResetService<KeyWordsModel>())
+                                using (var autoReset = ServicesRegister.GetService<IAutoResetService>())
                                 {
-                                    var task = autoReset.RunAutoResetMethodAsync(
+                                    using var task = autoReset.RunAutoResetMethodAsync(
                                        async xtk => { return (await CreateKeywordModelAsync(txt, item, xtk)) ?? new KeyWordsModel(); }
                                        , token);
                                     autoReset.WaitOne();
@@ -121,7 +121,6 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
                                     }
                             }
                         , token));
-
             }
             catch (OperationCanceledException ex)
             {
@@ -171,7 +170,7 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
         }
 
         private async Task<IEnumerable<string>> PickupkeywordsAsync(string txt, CancellationToken token)
-        { 
+        {
             var matches = WordSearchingRegex.Matches(txt).OfType<Match>().ToList();
             var srchMatches = matches.Where(m => m.Length > (Config?.SmallCharacterNumberInString ?? 50));
 

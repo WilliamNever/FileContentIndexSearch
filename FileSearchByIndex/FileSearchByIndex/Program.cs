@@ -35,6 +35,7 @@ namespace FileSearchByIndex
                 .AddTransient<IAnalysisService, CHTextAnalysisService>()
                 .AddTransient<ISearchingIndexFilesSerivce, SearchingIndexFilesSerivce>()
                 .AddTransient<ITaskHealthService, TaskHealthService>()
+                .AddTransient<IAutoResetService, AutoResetService>()
                 ;
 
             ServicesRegister.Services

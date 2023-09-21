@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace FileSearchByIndex.Core.Interfaces
 {
-    public interface IAutoResetService<T> : IDisposable where T : class
+    public interface IAutoResetService : IDisposable
     {
-        Task<T> RunAutoResetMethodAsync(Func<CancellationToken, Task<T>> func, CancellationToken token = default);
+        Task<T> RunAutoResetMethodAsync<T>(Func<CancellationToken, Task<T>> func, CancellationToken token = default) where T : class;
         void Set();
         void WaitOne();
     }

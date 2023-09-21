@@ -2,10 +2,10 @@
 
 namespace FileSearchByIndex.Core.Services
 {
-    public class AutoResetService<T> : BaseService<AutoResetService<T>>, IAutoResetService<T> where T : class
+    public class AutoResetService : BaseService<AutoResetService>, IAutoResetService
     {
         protected AutoResetEvent autoReset = new AutoResetEvent(false);
-        public async Task<T> RunAutoResetMethodAsync(Func<CancellationToken, Task<T>> func, CancellationToken token = default)
+        public async Task<T> RunAutoResetMethodAsync<T>(Func<CancellationToken, Task<T>> func, CancellationToken token = default) where T : class
         {
             token.Register(() => Set());
             var rsl = await func.Invoke(token);

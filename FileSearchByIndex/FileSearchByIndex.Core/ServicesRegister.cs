@@ -36,10 +36,5 @@ namespace FileSearchByIndex.Core
             Services.Configure<TaskThreadSettings>(root.GetSection(nameof(TaskThreadSettings)));
             Services.Configure<List<InboundFileConfig>>(root.GetSection("InboundFileConfigs"));
         }
-
-        public static IAutoResetService<T> GetAutoResetService<T>() where T : class
-        {
-            return new AutoResetService<T>();
-        }
     }
 }
