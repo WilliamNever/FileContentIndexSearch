@@ -35,7 +35,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
 
         public async Task<IEnumerable<KeyWordsModel>> AnalysisFileKeyWorks(string file, Action<string>? updateHandler, CancellationToken token = default)
         {
-            var keyWords = await _taskHealth.RunHealthTaskAysnc(async tk =>
+            var keyWords = await _taskHealth.RunHealthTaskWithAutoRestWaitAysnc(async tk =>
             {
                 List<KeyWordsModel> keyWords = new List<KeyWordsModel>();
                 try
@@ -63,6 +63,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                 }
                 catch (Exception ex)
                 {
+                    ex.Data.Add("Source file", $"Failed to Analysis {file} for time out!");
                     _log.Error($"Failed to pick up command keyword from {file}", ex);
                     throw;
                 }
@@ -89,16 +90,17 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
             var matches = PickerCommandInUsing.Matches(txt).ToList();
             var keysTxtList = matches.Select(x => new SampleTxtModel
             {
-                LineNumber = token.IsCancellationRequested ?
-                throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}")
-                : GetCurrentLineNumber(txt, x.Value.Trim(), x) + 1,
+                LineNumber = 
+                //token.IsCancellationRequested ?
+                //throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}"): 
+                GetCurrentLineNumber(txt, x.Value.Trim(), x) + 1,
                 Text = x.Value.Trim()
             }).ToList();
 
             var mCmds = keysTxtList.SelectMany(kt =>
-            token.IsCancellationRequested ?
-                throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}")
-                : regCommandName.Matches(ClearString(kt?.Text?.Trim() ?? "", "\"")).Select(x => x.Value.Trim().TrimEnd('('))).Distinct().ToList();
+            //token.IsCancellationRequested ?
+            //    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}"): 
+                regCommandName.Matches(ClearString(kt?.Text?.Trim() ?? "", "\"")).Select(x => x.Value.Trim().TrimEnd('('))).Distinct().ToList();
 
             var compare = SampleTxtModel.GetComparer();
             if (mCmds.Any())
@@ -106,8 +108,8 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                     async (item, token) =>
                         await Task.Run(() =>
                         {
-                            if (token.IsCancellationRequested)
-                                throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+                            //if (token.IsCancellationRequested)
+                            //    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
                             var list = keysTxtList.Where(x => x.Text.Contains(item)).Select(x => x).Distinct(compare);
                             if (list.Any())
                             {
@@ -146,8 +148,8 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
             matches.AddRange(PickerPropertiesName.Matches(txt));
             foreach (var m in matches)
             {
-                if (token.IsCancellationRequested)
-                    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+                //if (token.IsCancellationRequested)
+                //    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
                 keyWords.Add(CreateKeyword(txt, m, Core.Enums.EnKeyWordsType.MethodOrClassName, '{'));
             }
             return keyWords;
@@ -176,8 +178,8 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
             matches.AddRange(PickerOfCommentKeyWords2.Matches(txt));
             foreach (var m in matches)
             {
-                if (token.IsCancellationRequested)
-                    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+                //if (token.IsCancellationRequested)
+                //    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
                 keyWords.Add(CreateKeyword(txt, m, Core.Enums.EnKeyWordsType.Comment, '{'));
             }
             return keyWords;
