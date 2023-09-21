@@ -1,5 +1,4 @@
-﻿using FileSearchByIndex.Core;
-using FileSearchByIndex.Core.Consts;
+﻿using FileSearchByIndex.Core.Consts;
 using FileSearchByIndex.Core.Interfaces;
 using FileSearchByIndex.Core.Models;
 using FileSearchByIndex.Core.Settings;
@@ -11,14 +10,13 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
     public class TxtAnalysisService : TxtAnalysisBase<TxtAnalysisService>, IAnalysisService
     {
         protected ITaskHealthService _taskHealth;
-        protected AppSettings _appSettings;
         public string FileExtension => ".txt";
         protected Func<string, IAnalysisService?> _getAnalyses;
-        protected override Regex WordSearchingRegex { get => new(@"(?<word>\b[\u4e00-\u9fff]{2,}|\b([\w-]+[\s]+){2,})(.*?)(\k<word>)"); }
+        protected override Regex WordSearchingRegex { get => CreateRegex(@"(?<word>\b[\u4e00-\u9fff]{2,}|\b([\w-]+[\s]+){2,})(.*?)(\k<word>)"); }
         public TxtAnalysisService(Func<string, IAnalysisService?> getAnalyses, ITaskHealthService taskHealth
             , IOptions<TaskThreadSettings> TaskSettings, IOptions<List<InboundFileConfig>> configs, IOptions<AppSettings> AppSettings)
+            :base(AppSettings)
         {
-            _appSettings = AppSettings.Value;
             _taskHealth = taskHealth;
             _getAnalyses = getAnalyses;
             _taskSettings = TaskSettings.Value;
@@ -77,6 +75,8 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
                     async (item, token) =>
                         await Task.Run(async () =>
                         {
+                            if (token.IsCancellationRequested)
+                                throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
                             KeyWordsModel? kwordModel = await CreateKeywordModelAsync(txt, item, token);
                             if (!string.IsNullOrEmpty(kwordModel?.KeyWord))
                                 lock (keyWords)
@@ -91,7 +91,7 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
         private async Task<KeyWordsModel?> CreateKeywordModelAsync(string txt, string item, CancellationToken token)
         {
             KeyWordsModel rsl = new() { KeyWord = item, KeyWordsType = Core.Enums.EnKeyWordsType.FlatText };
-            Regex regex = new($"((\r)?{EnviConst.SpecNewLine1})(.+({item})+.+)+?\\1");
+            Regex regex = CreateRegex($"((\r)?{EnviConst.SpecNewLine1})(.+({item})+.+)+?\\1");
             var Txt_AddFirstLine = $"{EnviConst.EnvironmentNewLine}{txt}{EnviConst.EnvironmentNewLine}";
 
             var matches = regex.Matches(Txt_AddFirstLine);
@@ -131,6 +131,8 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
                 tmpMatches = new List<Match>();
                 foreach (var match in srchMatches)
                 {
+                    if (token.IsCancellationRequested)
+                        throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
                     tmpMatches.AddRange(WordSearchingRegex.Matches(LineWrap.Replace(match.Value ?? "", " "), match.Groups["word"].Length)
                         .Select(x => x).OfType<Match>());
                 }
