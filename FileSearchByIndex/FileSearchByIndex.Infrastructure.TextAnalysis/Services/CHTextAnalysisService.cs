@@ -9,8 +9,10 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
     public class CHTextAnalysisService : TxtAnalysisBase<CHTextAnalysisService>, IAnalysisService
     {
         public string FileExtension => ".txt.cn";
-        protected override Regex WordSearchingRegex => new(@"(?<word>\b[\u4e00-\u9fff]{2,})(.*?)(\k<word>)");
-        public CHTextAnalysisService(IOptions<TaskThreadSettings> TaskSettings, IOptions<List<InboundFileConfig>> configs)
+        protected override Regex WordSearchingRegex => CreateRegex(@"(?<word>\b[\u4e00-\u9fff]{2,})(.*?)(\k<word>)");
+        public CHTextAnalysisService(IOptions<TaskThreadSettings> TaskSettings
+            , IOptions<List<InboundFileConfig>> configs, IOptions<AppSettings> AppSettings)
+            :base(AppSettings)
         {
             _taskSettings = TaskSettings.Value;
             Config = configs?.Value.FirstOrDefault(x => x?.FileExtension?.Equals(FileExtension, StringComparison.OrdinalIgnoreCase) ?? false);

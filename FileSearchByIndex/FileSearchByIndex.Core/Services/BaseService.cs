@@ -1,7 +1,5 @@
-﻿using FileSearchByIndex.Core.Consts;
-using FileSearchByIndex.Core.Helper;
+﻿using FileSearchByIndex.Core.Helper;
 using System.Text.Json;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace FileSearchByIndex.Core.Services
 {

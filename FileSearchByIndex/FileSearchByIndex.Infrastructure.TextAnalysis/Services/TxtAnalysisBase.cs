@@ -1,5 +1,6 @@
 ﻿using FileSearchByIndex.Core.Services;
 using FileSearchByIndex.Core.Settings;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +25,10 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
         /// the valid min length of the keyword
         /// </summary>
         protected int _minWordLength;
+
+        protected TxtAnalysisBase(IOptions<AppSettings> AppSettings) : base(AppSettings)
+        {
+        }
 
         public bool HasChineseInFileName(string fileName)
         {

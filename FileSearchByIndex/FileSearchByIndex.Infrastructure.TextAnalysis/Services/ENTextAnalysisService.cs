@@ -9,8 +9,9 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
     public class ENTextAnalysisService : TxtAnalysisBase<ENTextAnalysisService>, IAnalysisService
     {
         public string FileExtension => ".txt.en";
-        protected override Regex WordSearchingRegex => new(@"(?<word>\b([\w-]+[\s]+){2,})(.*?)(\k<word>)");
-        public ENTextAnalysisService(IOptions<TaskThreadSettings> TaskSettings, IOptions<List<InboundFileConfig>> configs)
+        protected override Regex WordSearchingRegex => CreateRegex(@"(?<word>\b([\w-]+[\s]+){2,})(.*?)(\k<word>)");
+        public ENTextAnalysisService(IOptions<TaskThreadSettings> TaskSettings, IOptions<List<InboundFileConfig>> configs
+            , IOptions<AppSettings> AppSettings):base(AppSettings)
         {
             _taskSettings = TaskSettings.Value;
             Config = configs?.Value.FirstOrDefault(x => x?.FileExtension?.Equals(FileExtension, StringComparison.OrdinalIgnoreCase) ?? false);

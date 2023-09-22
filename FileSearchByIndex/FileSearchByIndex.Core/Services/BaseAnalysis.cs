@@ -1,5 +1,7 @@
 ﻿using FileSearchByIndex.Core.Consts;
 using FileSearchByIndex.Core.Models;
+using FileSearchByIndex.Core.Settings;
+using Microsoft.Extensions.Options;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -7,10 +9,27 @@ namespace FileSearchByIndex.Core.Services
 {
     public class BaseAnalysis<T> : BaseService<T> where T : class
     {
-        protected Regex EmptyChars { get => new(@"[\s]+"); }
-        protected Regex LineWrap { get => new($"((\r)?{EnviConst.SpecNewLine1})"); }
-        protected Regex Paragraph { get => new($"((\r)?{EnviConst.SpecNewLine1}){{2,}}"); }
+        protected AppSettings _appSettings;
+        private double RegexTimeout;
+        protected Regex EmptyChars { get => CreateRegex(@"[\s]+"); }
+        protected Regex LineWrap { get => CreateRegex($"((\r)?{EnviConst.SpecNewLine1})"); }
+        protected Regex Paragraph { get => CreateRegex($"((\r)?{EnviConst.SpecNewLine1}){{2,}}"); }
         protected Encoding FileEncoding { get; private set; } = Encoding.UTF8;
+
+        public BaseAnalysis(IOptions<AppSettings> AppSettings)
+        {
+            _appSettings = AppSettings.Value;
+            RegexTimeout = CalculateRegexMatchTimeout(_appSettings.AnalysisOneFileTimeoutInMinutes);
+        }
+
+        private double CalculateRegexMatchTimeout(int analysisOneFileTimeoutInMinutes)
+        {
+            double rto = analysisOneFileTimeoutInMinutes / 4d;
+            if (analysisOneFileTimeoutInMinutes < 1) rto = -1;
+            else rto = rto < 1 ? 1 : rto;
+            return rto;
+        }
+
         protected void InitCharEncoding(string? charCodeing)
         {
             try
@@ -63,10 +82,10 @@ namespace FileSearchByIndex.Core.Services
         }
         protected string ClearString(string txt, string regExpString, bool ignoreCase = true, string? appendString = null)
         {
-            var regDCom = ignoreCase ? new Regex($"{regExpString}", RegexOptions.IgnoreCase)
-                : new Regex($"{regExpString}");
-            var regString = ignoreCase ? new Regex($"{regExpString}[\\w\\W]*?{regExpString}", RegexOptions.IgnoreCase)
-                : new Regex($"{regExpString}[\\w\\W]*?{regExpString}");
+            var regDCom = ignoreCase ? CreateRegex($"{regExpString}", RegexOptions.IgnoreCase)
+                : CreateRegex($"{regExpString}");
+            var regString = ignoreCase ? CreateRegex($"{regExpString}[\\w\\W]*?{regExpString}", RegexOptions.IgnoreCase)
+                : CreateRegex($"{regExpString}[\\w\\W]*?{regExpString}");
             if ((regDCom.Matches(txt).Count & 1) > 0)
             {
                 txt += (appendString ?? regExpString);
@@ -92,9 +111,17 @@ namespace FileSearchByIndex.Core.Services
         {
             return LineWrap.Matches(ori_txt[0..ori_txt.IndexOf(partTxt?.Trim() ?? "", match.Index)]).Count;
         }
-        protected TimeSpan GetRegexTimeout(double dv)
+        private TimeSpan? GetRegexTimeout(double dv)
         {
-            return dv < 0 ? Regex.InfiniteMatchTimeout : TimeSpan.FromMinutes(dv);
+            return dv < 0 ? null : TimeSpan.FromMinutes(dv);
+        }
+        protected Regex CreateRegex(string pattern, RegexOptions options = RegexOptions.None)
+        {
+            return CreateRegex(pattern, options, GetRegexTimeout(RegexTimeout));
+        }
+        private Regex CreateRegex(string pattern, RegexOptions options, TimeSpan? timeout)
+        {
+            return new Regex(pattern, options, timeout ?? Regex.InfiniteMatchTimeout);
         }
     }
 }
