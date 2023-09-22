@@ -19,9 +19,99 @@ namespace ConsoleTest.Tests
     {
         public static async Task Main6Async()
         {
+            System.Threading.AutoResetEvent autoReset = new AutoResetEvent(false);
+            try
+            {
+                using (var tmain = Sub6_Async())
+                {
+                    await tmain;
+                    autoReset.WaitOne(10000);
+                }
+            }
+            catch (OperationCanceledException oex)
+            { 
+            }
+            catch (Exception ex)
+            {
+            }
+
             string ss = "\r\nThe information provided in the Microsoft Knowledge Base is provided \"as is\" without warranty of any kind.  Microsoft disclaims all warranties, either express or implied, including the warranties of merchantability and fitness for a particular purpose.  In no Event shall Microsoft corporation or its suppliers be liable for Any damages whatsoever including direct, indirect, incidental, consequential, loss of business profits or special damages, even if Microsoft corporation or its suppliers have been advised of the possibility of such damages.  Some states do not allow the exclusion or limitation of liability for consequential or incidental damages so the foregoing limitation may not apply.\r\n\r\nMicrosoft does not warrant that the functions for the licensed software or code contained in the Knowledge Base will meet your requirements, or that the operation of the licensed software or code will be uninterrupted or error-free, or that defects in the licensed software or code can be corrected.  Furthermore, Microsoft does not warrant or make any representations regarding the use or the results of the use of the licensed software, code or related documentation in terms of their correctness, accuracy, reliability, or otherwise.  No verbal or written information or advice given by Microsoft or its authorized representatives shall create a warranty or in any way increase the scope of this warranty.  Should the licensed software or code prove defective after Microsoft has delivered the same, you, and you alone, shall assume the entire cost associated with all necessary servicing, repair or correction.\r\n";
             var reg = new Regex($"((\r)?{EnviConst.SpecNewLine1})(.+(licensed)+.+)+?\\1");
             var ms = reg.Matches(ss);
+        }
+        public static async Task Sub6_Async()
+        {
+            Thread.CurrentThread.IsBackground = false;
+            
+            await Task.Run(async () =>
+             {
+                 Thread thr=null;
+                 Thread.CurrentThread.IsBackground = false;
+                 CancellationTokenSource srct = new CancellationTokenSource();
+
+                 var tsub = Task.Run(async () =>
+                 {
+                     thr = Thread.CurrentThread;
+                     Thread.CurrentThread.IsBackground = true;
+                     try
+                     {
+                         while (true)
+                         {
+                             Console.WriteLine($"Sub - {Thread.CurrentThread.ManagedThreadId} - {DateTime.Now}");
+                             //Thread.Sleep(1000);
+                             await Task.Delay(1000);
+                             srct.Token.ThrowIfCancellationRequested();
+                         }
+                     }
+                     catch (Exception ex)
+                     {
+                         throw ex;
+                     }
+                 }, srct.Token);
+                 //srct.CancelAfter(2000);
+                 await Task.Delay(2000);
+                 srct.Token.Register(() => { throw new NotImplementedException("NONONONO ---"); });
+                 srct.Token.Register(() => { throw new NotImplementedException("NO1 ---"); });
+                 srct.Cancel(false);
+                 Thread.Sleep(3000);
+                 Console.WriteLine($"UP - {Thread.CurrentThread.ManagedThreadId} - {DateTime.Now}");
+                 await tsub;
+                 Thread.CurrentThread.IsBackground = false;
+
+                 //thr?.Interrupt();
+                 //tsub.Dispose();
+
+                 //throw new TaskCanceledException("xxxxxx");
+
+
+                 //var st = new Thread(new ThreadStart(async () =>
+                 //{
+                 //    try
+                 //    {
+                 //        await Task.Run(() =>
+                 //            {
+                 //                while (true)
+                 //                {
+                 //                    Console.WriteLine($"Sub - {Thread.CurrentThread} - {DateTime.Now}");
+                 //                    Thread.Sleep(1000);
+                 //                }
+                 //            });
+                 //    }
+                 //    catch (Exception esd)
+                 //    { 
+                 //    }
+                 //}));
+                 //try
+                 //{
+                 //    st.Start();
+                 //    Thread.Sleep(5000);
+
+                 //    st.Interrupt();
+                 //}
+                 //catch (Exception emx)
+                 //{
+                 //}
+             });
         }
         public static async Task Main6_2Async()
         {

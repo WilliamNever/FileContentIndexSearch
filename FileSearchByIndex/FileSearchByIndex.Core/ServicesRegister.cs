@@ -1,4 +1,6 @@
 ﻿using FileSearchByIndex.Core.Consts;
+using FileSearchByIndex.Core.Interfaces;
+using FileSearchByIndex.Core.Services;
 using FileSearchByIndex.Core.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
