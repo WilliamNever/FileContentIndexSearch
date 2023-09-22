@@ -53,24 +53,35 @@ namespace ConsoleTest.Tests
                  {
                      thr = Thread.CurrentThread;
                      Thread.CurrentThread.IsBackground = true;
-                     while (true)
+                     try
                      {
-                         Console.WriteLine($"Sub - {Thread.CurrentThread.ManagedThreadId} - {DateTime.Now}");
-                         //Thread.Sleep(1000);
-                         await Task.Delay(1000, srct.Token);
+                         while (true)
+                         {
+                             Console.WriteLine($"Sub - {Thread.CurrentThread.ManagedThreadId} - {DateTime.Now}");
+                             //Thread.Sleep(1000);
+                             await Task.Delay(1000);
+                             srct.Token.ThrowIfCancellationRequested();
+                         }
+                     }
+                     catch (Exception ex)
+                     {
+                         throw ex;
                      }
                  }, srct.Token);
-                 Thread.Sleep(2000);
-                 srct.Cancel();
-                 Thread.Sleep(2000);
+                 //srct.CancelAfter(2000);
+                 await Task.Delay(2000);
+                 srct.Token.Register(() => { throw new NotImplementedException("NONONONO ---"); });
+                 srct.Token.Register(() => { throw new NotImplementedException("NO1 ---"); });
+                 srct.Cancel(false);
+                 Thread.Sleep(3000);
                  Console.WriteLine($"UP - {Thread.CurrentThread.ManagedThreadId} - {DateTime.Now}");
-
+                 await tsub;
                  Thread.CurrentThread.IsBackground = false;
 
                  //thr?.Interrupt();
-                 tsub.Dispose();
+                 //tsub.Dispose();
 
-                 throw new TaskCanceledException("xxxxxx");
+                 //throw new TaskCanceledException("xxxxxx");
 
 
                  //var st = new Thread(new ThreadStart(async () =>
