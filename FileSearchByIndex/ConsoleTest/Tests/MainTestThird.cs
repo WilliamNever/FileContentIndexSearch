@@ -49,14 +49,15 @@ namespace ConsoleTest.Tests
                  Thread.CurrentThread.IsBackground = false;
                  CancellationTokenSource srct = new CancellationTokenSource();
 
-                 var tsub = Task.Run(() =>
+                 var tsub = Task.Run(async () =>
                  {
                      thr = Thread.CurrentThread;
                      Thread.CurrentThread.IsBackground = true;
                      while (true)
                      {
                          Console.WriteLine($"Sub - {Thread.CurrentThread.ManagedThreadId} - {DateTime.Now}");
-                         Thread.Sleep(1000);
+                         //Thread.Sleep(1000);
+                         await Task.Delay(1000, srct.Token);
                      }
                  }, srct.Token);
                  Thread.Sleep(2000);
