@@ -12,8 +12,19 @@ namespace FileSearchByIndex.Core.Services
             token.Register(() => 
             Set()
             );
-            var rsl = await func.Invoke(token);
-            Set();
+            T rsl; try
+            {
+                rsl = await func.Invoke(token);
+            }
+            catch (Exception)
+            { 
+                throw; 
+            }
+            finally 
+            { 
+                Set(); 
+            }
+            
             return rsl;
         }
         public void WaitOne()

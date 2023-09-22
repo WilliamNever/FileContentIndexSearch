@@ -32,11 +32,13 @@ namespace FileSearchByIndex.Core.Services
             catch (OperationCanceledException)
             {
                 //todo: to do something when task was cancelled.
+                source.Cancel();
                 throw;
             }
             catch (Exception)
             {
                 //todo: to do something when task was cancelled.
+                source.Cancel();
                 throw;
             }
             return rsl;
@@ -51,11 +53,13 @@ namespace FileSearchByIndex.Core.Services
             catch (OperationCanceledException)
             {
                 //todo: to do something when task was cancelled.
+                source.Cancel();
                 throw;
             }
             catch (Exception)
             {
                 //todo: to do something when task was cancelled.
+                source.Cancel();
                 throw;
             }
         }
