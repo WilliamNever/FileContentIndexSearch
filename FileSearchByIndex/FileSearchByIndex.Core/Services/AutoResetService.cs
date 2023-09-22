@@ -9,12 +9,11 @@ namespace FileSearchByIndex.Core.Services
         public async Task<T> RunAutoResetMethodAsync<T>(Func<CancellationToken, Task<T>> func, CancellationToken token = default) where T : class
         {
             autoReset?.Reset();
-            token.Register(() => 
-            Set()
-            );
-            T rsl; try
+            token.Register(() => Set());
+
+            try
             {
-                rsl = await func.Invoke(token);
+                return await func.Invoke(token);
             }
             catch (Exception)
             { 
@@ -24,8 +23,6 @@ namespace FileSearchByIndex.Core.Services
             { 
                 Set(); 
             }
-            
-            return rsl;
         }
         public void WaitOne()
         {
