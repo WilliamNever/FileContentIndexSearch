@@ -59,6 +59,7 @@
             // 
             // chbIsSearchingInSampleTxt
             // 
+            chbIsSearchingInSampleTxt.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             chbIsSearchingInSampleTxt.AutoSize = true;
             chbIsSearchingInSampleTxt.Location = new Point(4, 475);
             chbIsSearchingInSampleTxt.Margin = new Padding(4);
