@@ -26,30 +26,31 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
             InitCharEncoding(Config?.EncodingName);
         }
 
-        public async Task<IEnumerable<KeyWordsModel>> AnalysisFileKeyWorks(string file, Action<string>? updateHandler, CancellationToken token = default)
+        public async Task<KeywordRefSampleTxtModel> AnalysisFileKeyWorks(string file, Action<string>? updateHandler, CancellationToken token = default)
         {
             try
             {
                 var keyWords = await _taskHealth.RunHealthTaskWithAutoRestWaitAysnc(async (tk) =>
                 {
-                    List<KeyWordsModel> kws = new();
+                    KeywordRefSampleTxtModel kws;
 
                     if (Config?.CanAutoSelectAnalysisService ?? false)
                     {
                         IAnalysisService analysis =
                             _getAnalyses(HasChineseInFileName(Path.GetFileName(file)) ? ".txt.cn" : ".txt.en")
                             ?? throw new Exception($"No analysis for file {file}");
-                        kws.AddRange(await analysis.AnalysisFileKeyWorks(file, updateHandler, tk));
+                        kws = await analysis.AnalysisFileKeyWorks(file, updateHandler, tk);
                     }
                     else
                     {
-                        kws.AddRange(await AnalysisInCommonAsync(file, updateHandler, tk));
+                        kws = await AnalysisInCommonAsync(file, updateHandler, tk);
                     }
                     return kws;
                 }, token);
 
-                keyWords.ForEach(x => x.LineNumbers = x.SampleTxts.Select(y => y.LineNumber).ToList());
-                return keyWords.OrderBy(x => x.Frequency);
+                keyWords.KeyWords = keyWords.KeyWords.OrderBy(x => x.Frequency).ToList();
+                keyWords.SampleTxts = keyWords.SampleTxts.OrderBy(x => x.LineNumber).ToList();
+                return keyWords;
             }
             catch (OperationCanceledException ex)
             {
@@ -64,12 +65,14 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
             }
         }
 
-        private async Task<IEnumerable<KeyWordsModel>> AnalysisInCommonAsync(string file, Action<string>? updateHandler, CancellationToken token)
+        private async Task<KeywordRefSampleTxtModel> AnalysisInCommonAsync(string file, Action<string>? updateHandler, CancellationToken token)
         {
-            List<KeyWordsModel> keyWords = new();
+            KeywordRefSampleTxtModel keywordRef = new();
+
             var txt = await ReadFileAsync(file);
             IEnumerable<string> strKWs = await PickupkeywordsAsync(txt, token);
 
+            updateHandler?.Invoke($"{strKWs.LongCount()} keywords for {file} -");
             if (strKWs != null && strKWs.Any())
                 await Parallel.ForEachAsync(strKWs, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount, CancellationToken = token },
                     async (item, token) =>
@@ -79,13 +82,16 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
                                 throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
                             KeyWordsModel? kwordModel = await CreateKeywordModelAsync(txt, item, token);
                             if (!string.IsNullOrEmpty(kwordModel?.KeyWord))
-                                lock (keyWords)
+                            {
+                                kwordModel.LineNumbers = kwordModel.SampleTxts.Select(x => x.LineNumber).OrderBy(x => x).ToList();
+                                lock (LockObj)
                                 {
-                                    keyWords.Add(kwordModel);
+                                    AddKeywordToKeyRef(keywordRef, kwordModel);
                                 }
+                            }
                         }
                     , token));
-            return keyWords;
+            return keywordRef;
         }
 
         private async Task<KeyWordsModel?> CreateKeywordModelAsync(string txt, string item, CancellationToken token)

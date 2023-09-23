@@ -9,6 +9,7 @@ namespace FileSearchByIndex.Core.Services
 {
     public class BaseAnalysis<T> : BaseService<T> where T : class
     {
+        protected object LockObj = new();
         protected AppSettings _appSettings;
         private double RegexTimeout;
         protected Regex EmptyChars { get => CreateRegex(@"[\s]+"); }
@@ -123,5 +124,22 @@ namespace FileSearchByIndex.Core.Services
         {
             return new Regex(pattern, options, timeout ?? Regex.InfiniteMatchTimeout);
         }
+        protected void AddKeywordToKeyRef(KeywordRefSampleTxtModel keywordRef, KeyWordsModel kwordModel)
+        {
+            var existSpTxt = kwordModel.SampleTxts.Where(k =>
+                keywordRef.SampleTxts.Any(kr => kr.LineNumber == k.LineNumber && k.Length > kr.Length));
+            var notExistSpTxt = kwordModel.SampleTxts.Where(k =>
+                !keywordRef.SampleTxts.Any(kr => kr.LineNumber == k.LineNumber));
+            if (existSpTxt.Any())
+            {
+                keywordRef.SampleTxts.RemoveAll(kr => existSpTxt.Any(k => k.LineNumber == kr.LineNumber));
+                keywordRef.SampleTxts.AddRange(existSpTxt);
+            }
+            keywordRef.SampleTxts.AddRange(notExistSpTxt);
+
+            kwordModel.SampleTxts.Clear();
+            keywordRef.KeyWords.Add(kwordModel);
+        }
+
     }
 }

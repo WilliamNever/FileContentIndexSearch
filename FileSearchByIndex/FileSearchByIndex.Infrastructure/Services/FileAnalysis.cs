@@ -39,16 +39,11 @@ namespace FileSearchByIndex.Infrastructure.Services
             {
                 try
                 {
-                    var keyWords = (await analysis.AnalysisFileKeyWorks(file, updateHandler, token)).ToList();
-                    if (keyWords != null && keyWords.Any())
+                    var keyWordsRef = await analysis.AnalysisFileKeyWorks(file, updateHandler, token);
+                    if (keyWordsRef != null)
                     {
-                        sfi.KeyWords.AddRange(keyWords);
-                        var smpls = keyWords.SelectMany(x => x.SampleTxts);
-                        var grps = smpls.GroupBy(x => x.LineNumber).OrderBy(x => x.Key);
-                        foreach (var grp in grps)
-                        {
-                            sfi.SampleTxts.Add(grp.OrderByDescending(x => x.Length).First());
-                        }
+                        sfi.KeyWords = keyWordsRef.KeyWords;
+                        sfi.SampleTxts = keyWordsRef.SampleTxts;
                     }
                 }
                 catch (OperationCanceledException ex)

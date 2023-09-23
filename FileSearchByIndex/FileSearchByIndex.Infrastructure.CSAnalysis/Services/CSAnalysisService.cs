@@ -34,36 +34,23 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
         protected virtual Regex PickerMethodsName { get => CreateRegex($"((\r)?{EnviConst.SpecNewLine1})[\\s]+((private|public|protected|internal)[\\s]+)[\\w. <>?\\[\\]]+\\([\\w <>.\\?:=,\"\']*\\)([\\s]+where[\\w\\s:.<>\\[\\]]+)*"); }
         protected virtual Regex PickerPropertiesName { get => CreateRegex($"((\r)?{EnviConst.SpecNewLine1})[\\s]+(private|public|protected|internal){{1}}[\\s]+[\\w. <>?\\[\\]]+{{"); }
         protected virtual Regex PickerCommandInUsing { get => CreateRegex($"((\r)?{EnviConst.SpecNewLine1})[\\s\\w\\(\\)\\[\\].=<>]+[\\w<>]\\([\\w\\W]*?\\)"); }
-
-        public async Task<IEnumerable<KeyWordsModel>> AnalysisFileKeyWorks(string file, Action<string>? updateHandler, CancellationToken token = default)
+        protected KeywordRefSampleTxtModel keywordRef = new();
+        public async Task<KeywordRefSampleTxtModel> AnalysisFileKeyWorks(string file, Action<string>? updateHandler, CancellationToken token = default)
         {
             try
             {
-                var keyWords = await _taskHealth.RunHealthTaskWithAutoRestWaitAysnc(async tk =>
+                await _taskHealth.RunHealthTaskWithAutoRestWaitAysnc(async tk =>
                 {
-                    List<KeyWordsModel> kws = new List<KeyWordsModel>();
-
                     var txt = await ReadFileAsync(file);
-                    var rsl = await Task.WhenAll(
+                    Task.WaitAll(
                     GetCommentKeyWordsAsync(file, txt, updateHandler, tk),
                     GetNameKeyWordsAsync(file, txt, updateHandler, tk),
                     GetCommandKeyWordsAsync(file, txt, updateHandler, tk));
-
-                    foreach (var keyWord in rsl)
-                    {
-                        if (tk.IsCancellationRequested)
-                            throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
-                        if (keyWord != null)
-                        {
-                            var list = keyWord.ToList();
-                            list.ForEach(x => x.LineNumbers = x.SampleTxts.Select(y => y.LineNumber).ToList());
-                            kws.AddRange(list);
-                        }
-                    }
-                    return kws;
                 }, token);
 
-                return keyWords.OrderBy(x => x.Frequency);
+                keywordRef.KeyWords = keywordRef.KeyWords.OrderBy(x => x.Frequency).ToList();
+                keywordRef.SampleTxts = keywordRef.SampleTxts.OrderBy(x => x.LineNumber).ToList();
+                return keywordRef;
             }
             catch (OperationCanceledException ex)
             {
@@ -86,13 +73,13 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
         /// <param name="token"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        private async Task<IEnumerable<KeyWordsModel>> GetCommandKeyWordsAsync(string file, string txt, Action<string>? updateHandler, CancellationToken token)
+        private async Task GetCommandKeyWordsAsync(string file, string txt, Action<string>? updateHandler, CancellationToken token)
         {
             /*
              * pick up the commands in use
              */
             Regex regCommandName = CreateRegex($"[\\w.<>]+[\\s]*\\(");
-            List<KeyWordsModel> keyWords = new List<KeyWordsModel>();
+            //List<KeyWordsModel> keyWords = new List<KeyWordsModel>();
             var matches = PickerCommandInUsing.Matches(txt).ToList();
             var keysTxtList = matches.Select(x => new SampleTxtModel
             {
@@ -119,20 +106,26 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                             var list = keysTxtList.Where(x => x.Text.Contains(item)).Select(x => x).Distinct(compare);
                             if (list.Any())
                             {
-                                lock (keyWords)
+                                var kwordModel = new KeyWordsModel
                                 {
-                                    keyWords.Add(new KeyWordsModel
+                                    KeyWord = item,
+                                    KeyWordsType = Core.Enums.EnKeyWordsType.CommandName,
+                                    SampleTxts = list.ToList()
+                                };
+                                if (!string.IsNullOrEmpty(kwordModel?.KeyWord))
+                                {
+                                    kwordModel.LineNumbers = kwordModel.SampleTxts.Select(x => x.LineNumber).OrderBy(x => x).ToList();
+                                    lock (LockObj)
                                     {
-                                        KeyWord = item,
-                                        KeyWordsType = Core.Enums.EnKeyWordsType.CommandName,
-                                        SampleTxts = list.ToList()
-                                    });
+                                        AddKeywordToKeyRef(keywordRef, kwordModel);
+                                    }
                                 }
+
                             }
 
                         }
                     , token));
-            return keyWords;
+            //return keyWords;
         }
 
         /// <summary>
@@ -143,12 +136,12 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
         /// <param name="token"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        private async Task<IEnumerable<KeyWordsModel>> GetNameKeyWordsAsync(string file, string txt, Action<string>? updateHandler, CancellationToken token)
+        private async Task GetNameKeyWordsAsync(string file, string txt, Action<string>? updateHandler, CancellationToken token)
         {
             /*
              * Pick up the class, method and properties names
              */
-            List<KeyWordsModel> keyWords = new();
+            //List<KeyWordsModel> keyWords = new();
             var matches = PickerClassName.Matches(txt).ToList();
             matches.AddRange(PickerMethodsName.Matches(txt));
             matches.AddRange(PickerPropertiesName.Matches(txt));
@@ -156,9 +149,16 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
             {
                 if (token.IsCancellationRequested)
                     throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
-                keyWords.Add(CreateKeyword(txt, m, Core.Enums.EnKeyWordsType.MethodOrClassName, '{'));
+                var kwordModel = CreateKeyword(txt, m, Core.Enums.EnKeyWordsType.MethodOrClassName, '{');
+                if (!string.IsNullOrEmpty(kwordModel?.KeyWord))
+                {
+                    kwordModel.LineNumbers = kwordModel.SampleTxts.Select(x => x.LineNumber).OrderBy(x => x).ToList();
+                    lock (LockObj)
+                    {
+                        AddKeywordToKeyRef(keywordRef, kwordModel);
+                    }
+                }
             }
-            return keyWords;
         }
 
         /// <summary>
@@ -169,7 +169,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
         /// <param name="token"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        private async Task<IEnumerable<KeyWordsModel>> GetCommentKeyWordsAsync(string file, string txt, Action<string>? updateHandler, CancellationToken token)
+        private async Task GetCommentKeyWordsAsync(string file, string txt, Action<string>? updateHandler, CancellationToken token)
         {
             /*
              * 1- 
@@ -179,16 +179,22 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
                 2-
                     /*  *_/
              */
-            List<KeyWordsModel> keyWords = new();
             var matches = PickerOfCommentKeyWords1.Matches(txt).ToList();
             matches.AddRange(PickerOfCommentKeyWords2.Matches(txt));
             foreach (var m in matches)
             {
                 if (token.IsCancellationRequested)
                     throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
-                keyWords.Add(CreateKeyword(txt, m, Core.Enums.EnKeyWordsType.Comment, '{'));
+                var kwordModel = CreateKeyword(txt, m, Core.Enums.EnKeyWordsType.Comment, '{');
+                if (!string.IsNullOrEmpty(kwordModel?.KeyWord))
+                {
+                    kwordModel.LineNumbers = kwordModel.SampleTxts.Select(x => x.LineNumber).OrderBy(x => x).ToList();
+                    lock (LockObj)
+                    {
+                        AddKeywordToKeyRef(keywordRef, kwordModel);
+                    }
+                }
             }
-            return keyWords;
         }
     }
 }

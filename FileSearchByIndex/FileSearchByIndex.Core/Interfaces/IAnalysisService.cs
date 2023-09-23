@@ -11,6 +11,6 @@ namespace FileSearchByIndex.Core.Interfaces
     {
         public string FileExtension { get; }
 
-        Task<IEnumerable<KeyWordsModel>> AnalysisFileKeyWorks(string file, Action<string>? updateHandler, CancellationToken token = default);
+        Task<KeywordRefSampleTxtModel> AnalysisFileKeyWorks(string file, Action<string>? updateHandler, CancellationToken token = default);
     }
 }

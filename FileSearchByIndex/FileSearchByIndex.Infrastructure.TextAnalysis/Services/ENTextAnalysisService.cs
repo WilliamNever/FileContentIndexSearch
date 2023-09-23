@@ -19,9 +19,9 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
             _minWordLength = _repeatKeywordsConfig.Count > 0 ? _repeatKeywordsConfig.Min(x => x.Key) : 0;
             InitCharEncoding(Config?.EncodingName);
         }
-        public async Task<IEnumerable<KeyWordsModel>> AnalysisFileKeyWorks(string file, Action<string>? updateHandler, CancellationToken token = default)
+        public async Task<KeywordRefSampleTxtModel> AnalysisFileKeyWorks(string file, Action<string>? updateHandler, CancellationToken token = default)
         {
-            List<KeyWordsModel> keyWords = new();
+            KeywordRefSampleTxtModel keyWords = new();
             try
             {
                 var txt = await ReadFileAsync(file);
