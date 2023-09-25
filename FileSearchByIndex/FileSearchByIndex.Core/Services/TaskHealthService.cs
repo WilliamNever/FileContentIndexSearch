@@ -43,6 +43,33 @@ namespace FileSearchByIndex.Core.Services
             }
             return rsl;
         }
+        public async Task RunHealthTaskWithAutoRestWaitAysnc(Func<CancellationToken, Task> func, CancellationToken token = default)
+        {
+            var source = CreateRelatedTokenSource(token);
+
+            try
+            {
+                var task = _autoResetService.RunAutoResetMethodAsync(
+                          async xtk => await func.Invoke(xtk), source.Token);
+                _autoResetService.WaitOne();
+                if (source.Token.IsCancellationRequested)
+                    throw new TaskCanceledException($"Task {Thread.CurrentThread.ManagedThreadId} is Canceled at {DateTime.Now}");
+                await task;
+
+            }
+            catch (OperationCanceledException)
+            {
+                //todo: to do something when task was cancelled.
+                source.Cancel();
+                throw;
+            }
+            catch (Exception)
+            {
+                //todo: to do something when task was cancelled.
+                source.Cancel();
+                throw;
+            }
+        }
         public async Task<TResult> RunHealthTaskAysnc<TResult>(Func<CancellationToken, Task<TResult>> func, CancellationToken token = default) where TResult : class
         {
             var source = CreateRelatedTokenSource(token);

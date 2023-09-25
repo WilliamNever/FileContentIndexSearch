@@ -9,6 +9,7 @@ namespace FileSearchByIndex.Core.Interfaces
     public interface IAutoResetService : IDisposable
     {
         Task<T> RunAutoResetMethodAsync<T>(Func<CancellationToken, Task<T>> func, CancellationToken token = default) where T : class;
+        Task RunAutoResetMethodAsync(Func<CancellationToken, Task> func, CancellationToken token = default);
         void Set();
         void WaitOne();
     }
