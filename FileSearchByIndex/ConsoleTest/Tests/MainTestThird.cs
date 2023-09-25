@@ -19,6 +19,14 @@ namespace ConsoleTest.Tests
     {
         public static async Task Main6Async()
         {
+            await Task.Run(() => { Console.WriteLine("in upper task"); return 1; }).ContinueWith(async xx =>
+            {
+                var rt = await xx;
+                Console.WriteLine($"in a continue task - {rt}");
+            });
+        }
+        public static async Task Main6_3Async()
+        {
             System.Threading.AutoResetEvent autoReset = new AutoResetEvent(false);
             try
             {
