@@ -97,7 +97,8 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
         private async Task<KeyWordsModel?> CreateKeywordModelAsync(string txt, string item, CancellationToken token)
         {
             KeyWordsModel rsl = new() { KeyWord = item, KeyWordsType = Core.Enums.EnKeyWordsType.FlatText };
-            Regex regex = CreateRegex($"((\r)?{EnviConst.SpecNewLine1})(.+({item})+.+)+?\\1");
+            //Regex regex = CreateRegex($"((\r)?{EnviConst.SpecNewLine1})(.+({item})+.*)+?\\1");
+            Regex regex = CreateRegex($"(?<=(\r|{EnviConst.SpecNewLine1}){{1}})((.+({item})+.*)+?\\1)");
             var Txt_AddFirstLine = $"{EnviConst.EnvironmentNewLine}{txt}{EnviConst.EnvironmentNewLine}";
 
             var matches = regex.Matches(Txt_AddFirstLine);

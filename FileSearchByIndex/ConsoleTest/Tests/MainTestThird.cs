@@ -19,6 +19,20 @@ namespace ConsoleTest.Tests
     {
         public static async Task Main6Async()
         {
+            var f1 = @"C:\tAnsly\SqlServer.txt";
+            var txt1 = await ReadFileAsync(f1);
+            var Txt_AddFirstLine = $"{EnviConst.EnvironmentNewLine}{txt1}{EnviConst.EnvironmentNewLine}";
+            Regex regex = new Regex($"(?<=(\r|{EnviConst.SpecNewLine1}){{1}})((.+(block in T-sql)+.*)+?\\1)");
+            //((\r)?({EnviConst.SpecNewLine1}))
+            var matches = regex.Matches(Txt_AddFirstLine);
+
+            var stxt = "\n\nTry / Catch block in T-sql\n.there is no finally block in T-sql\n";
+            var matches1 = regex.Matches(stxt);
+            var regGrp1 = new Regex(@"\b(?<word>[\w ]{2,})([\w\s]*?)(\k<word>)\b");
+            var matches2 = regGrp1.Matches(stxt);
+        }
+        public static async Task Main6_4Async()
+        {
             await Task.Run(() => { Console.WriteLine("in upper task"); return 1; }).ContinueWith(async xx =>
             {
                 var rt = await xx;
