@@ -19,6 +19,16 @@ namespace ConsoleTest.Tests
     {
         public static async Task Main6Async()
         {
+            int lim = 5;
+            var strs = new List<string>();
+            var len = strs.Count;
+
+            for (int i = 0; i < 10; i++)
+            {
+                strs.Add(i.ToString());
+                strs = strs.TakeLast(lim).ToList();
+            }
+            var strL = string.Join(Environment.NewLine, strs);
             var f1 = @"C:\tAnsly\SqlServer.txt";
             var txt1 = await ReadFileAsync(f1);
             var Txt_AddFirstLine = $"{EnviConst.EnvironmentNewLine}{txt1}{EnviConst.EnvironmentNewLine}";
