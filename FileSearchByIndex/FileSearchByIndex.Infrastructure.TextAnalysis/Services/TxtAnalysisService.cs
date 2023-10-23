@@ -72,7 +72,7 @@ namespace FileSearchByIndex.Infrastructure.TextAnalysis.Services
             var txt = await ReadFileAsync(file);
             IEnumerable<string> strKWs = await PickupkeywordsAsync(txt, token);
 
-            updateHandler?.Invoke($"{strKWs.LongCount()} keywords for {file} -");
+            //updateHandler?.Invoke($"{strKWs.LongCount()} keywords for {file} -");
             if (strKWs != null && strKWs.Any())
                 await Parallel.ForEachAsync(strKWs, new ParallelOptions { MaxDegreeOfParallelism = _taskSettings.TaskInitCount, CancellationToken = token },
                     async (item, token) =>
