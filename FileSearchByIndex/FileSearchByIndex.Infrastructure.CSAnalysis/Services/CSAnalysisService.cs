@@ -39,7 +39,7 @@ namespace FileSearchByIndex.Infrastructure.CSAnalysis.Services
         {
             try
             {
-                updateHandler?.Invoke($"Analysis keywords for file - {file} -");
+                //updateHandler?.Invoke($"Analysis keywords for file - {file} -");
                 await _taskHealth.RunHealthTaskWithAutoRestWaitAysnc(async tk =>
                 {
                     var txt = await ReadFileAsync(file);
