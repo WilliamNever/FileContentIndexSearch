@@ -22,7 +22,17 @@ namespace FileSearchByIndex.UserControls
             txtIndexFileName.Text = "aat";
             txtFilter.Text = "*.txt|*.cs";
             cbkIncludeSub.Checked = false;
+
+            txtPath.TextChanged += TxtPath_TextChanged;
         }
+
+        private void TxtPath_TextChanged(object? sender, EventArgs e)
+        {
+            var tBox = sender as TextBox;
+            if (tBox != null)
+                txtIndexFileName.Text = Regex.Replace($"{tBox.Text}_Ext_{txtFilter.Text}", "[\\W\\s]+", "_");
+        }
+
         public void SetParentIForm(IForm parent) => pform = parent;
 
         private void btnBrowsPath_Click(object sender, EventArgs e)
@@ -33,7 +43,7 @@ namespace FileSearchByIndex.UserControls
             if (fbd.ShowDialog() == DialogResult.OK)
             {
                 txtPath.Text = fbd.SelectedPath;
-                txtIndexFileName.Text = Regex.Replace($"{fbd.SelectedPath}_Ext_{txtFilter.Text}", "[\\W\\s]+", "_");
+                //txtIndexFileName.Text = Regex.Replace($"{fbd.SelectedPath}_Ext_{txtFilter.Text}", "[\\W\\s]+", "_");
             }
         }
         private void btnCreateIndex_Click(object sender, EventArgs e)
