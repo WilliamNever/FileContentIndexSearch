@@ -26,6 +26,7 @@ namespace FileSearchByIndex.CustomForm
         public virtual void CleanMessages()
         {
             txtInfo.Text = string.Empty;
+            Messages.Clear();
         }
         public virtual void AcceptMessage(string message, string location = "")
         {
@@ -57,7 +58,7 @@ namespace FileSearchByIndex.CustomForm
 
         private void btnClear_Click(object sender, EventArgs e)
         {
-            txtInfo.Text = "";
+            txtInfo.Text = string.Empty;
         }
     }
 }
